@@ -98,7 +98,7 @@
       color: var(--text);
       min-height: 100vh;
       padding-top: env(safe-area-inset-top);
-      padding-bottom: calc(84px + env(safe-area-inset-bottom));
+      padding-bottom: calc(70px + env(safe-area-inset-bottom));
     }
 
     .container {
@@ -172,6 +172,10 @@
       fill: none; stroke: currentColor; stroke-width: 1.9;
       stroke-linecap: round; stroke-linejoin: round;
     }
+    .icon-btn.sm { width: 34px; height: 34px; border-radius: 10px; }
+    .icon-btn.sm svg { width: 17px; height: 17px; }
+    .icon-btn.danger { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
+    .ev-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .icon-btn.accent { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
     .pill-btn { height: 38px; }
     .pill-btn.accent { background: var(--accent-soft); border-color: rgba(52, 211, 153, 0.35); color: var(--accent); }
@@ -316,7 +320,9 @@
     /* صفحة التقويم ثابتة على قد الشاشة */
     html.cal-lock, html.cal-lock body { overflow: hidden; overscroll-behavior: none; }
     html.cal-lock body {
-      height: 100vh; height: 100dvh; min-height: 0;
+      height: calc(100vh + var(--vp-gap, 0px));
+      height: calc(100dvh + var(--vp-gap, 0px));
+      min-height: 0;
       display: flex; flex-direction: column;
     }
     html.cal-lock .container {
@@ -489,7 +495,8 @@
     /* Bottom Nav */
     .bottom-nav {
       position: fixed;
-      bottom: 0;
+      /* --vp-gap: تصحيح خلل الآيفون اللي يخلي فراغ تحت الشريط في وضع التطبيق */
+      bottom: calc(-1 * var(--vp-gap, 0px));
       left: 0;
       right: 0;
       background: var(--nav-bg);
@@ -497,7 +504,7 @@
       border-top: 1px solid var(--card-border);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      padding: 6px 8px calc(2px + env(safe-area-inset-bottom));
       z-index: 40;
     }
 
@@ -801,6 +808,7 @@
 
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="btn primary" style="flex:1" onclick="saveEvent()">حفظ الموعد</button>
+        <button class="btn danger" id="ev-delete" onclick="deleteEvent(document.getElementById('ev-id').value)" title="حذف"><svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4.5h6V7"/></svg></button>
         <button class="btn secondary" onclick="closeEventModal()">إلغاء</button>
       </div>
     </div>
@@ -1457,7 +1465,10 @@ Script.complete();</script>
               <div class="event-meta">${ev.time ? "الساعة " + ev.time + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
               ${ev.isPublic && ev.note ? `<div class="event-note">${escapeHtml(ev.note)}</div>` : ""}
             </div>
-            ${ev.isPublic ? "" : `<button class="pill-btn" onclick="openEventModal('${ev.id}')">تعديل</button>`}
+            ${ev.isPublic ? "" : `<div class="ev-actions">
+              <button class="icon-btn sm" onclick="openEventModal('${ev.id}')" title="تعديل"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg></button>
+              <button class="icon-btn sm danger" onclick="deleteEvent('${ev.id}')" title="حذف"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4.5h6V7"/></svg></button>
+            </div>`}
           </div>
         </div>
       `).join("");
@@ -1558,6 +1569,7 @@ Script.complete();</script>
     function openEventModal(id = null, presetYMD = null) {
       const ev = id ? events.find(e => e.id === id) : null;
       document.getElementById("modal-title").textContent = ev ? "تعديل الموعد" : "موعد جديد";
+      document.getElementById("ev-delete").style.display = ev ? "" : "none";
       document.getElementById("ev-id").value = ev ? ev.id : "";
       document.getElementById("ev-title").value = ev ? ev.title : "";
       document.getElementById("ev-date").value = ev ? ev.date : (presetYMD || todayYMD);
@@ -1615,6 +1627,7 @@ Script.complete();</script>
       if (!ev || !confirm(`حذف «${ev.title}»؟`)) return;
       events = events.filter(e => e.id !== id);
       persistEvents();
+      closeEventModal();
       renderCalendar();
       renderEventsTab();
       renderWidgetPreview();
@@ -1806,7 +1819,23 @@ Script.complete();</script>
       e.preventDefault();
     }, { passive: false });
 
+    // خلل iOS: في وضع "إضافة للشاشة الرئيسية" مع شريط الحالة الشفاف، الآيفون أحياناً
+    // يحسب الشاشة أقصر بمقدار ارتفاع شريط الحالة، فيطلع فراغ تحت الشريط السفلي.
+    function fixViewportGap() {
+      let gap = 0;
+      const portrait = window.matchMedia("(orientation: portrait)").matches;
+      if (window.navigator.standalone && portrait) {
+        gap = Math.round(screen.height - window.innerHeight);
+        if (gap < 0 || gap > 120) gap = 0;
+      }
+      document.documentElement.style.setProperty("--vp-gap", gap + "px");
+    }
+    window.addEventListener("resize", fixViewportGap);
+    window.addEventListener("orientationchange", () => setTimeout(fixViewportGap, 300));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(fixViewportGap, 100); });
+
     // Init
+    fixViewportGap();
     document.documentElement.classList.add("cal-lock");
     applyTheme();
     renderHeader();
