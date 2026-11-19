@@ -8,22 +8,79 @@
   <meta name="apple-mobile-web-app-title" content="هلالي" />
   <meta name="theme-color" content="#0B1220" />
   <title>هلالي</title>
+  <script>
+    (function () {
+      var pref = "auto";
+      try { pref = (JSON.parse(localStorage.getItem("hilali_settings_v2") || "{}").theme) || "auto"; } catch (e) {}
+      var light = pref === "light" || (pref === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches);
+      document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+    })();
+  </script>
   <style>
     :root {
+      color-scheme: dark;
       --bg: #0B1220;
       --bg2: #111A2E;
+      --glow: #13253A;
       --card: rgba(255, 255, 255, 0.05);
       --card-border: rgba(255, 255, 255, 0.09);
+      --surface-1: rgba(255, 255, 255, 0.02);
+      --surface-2: rgba(255, 255, 255, 0.045);
+      --surface-3: rgba(255, 255, 255, 0.06);
+      --surface-4: rgba(255, 255, 255, 0.08);
       --text: #F8FAFC;
       --sub: #94A3B8;
+      --note: #CBD5E1;
       --accent: #34D399;
       --accent-soft: rgba(52, 211, 153, 0.16);
+      --on-accent: #05251B;
       --amber: #F59E0B;
       --amber-soft: rgba(245, 158, 11, 0.16);
       --blue: #38BDF8;
       --danger: #F87171;
       --danger-soft: rgba(248, 113, 113, 0.14);
+      --nav-bg: rgba(11, 18, 32, 0.92);
+      --backdrop: rgba(0, 0, 0, 0.65);
+      --status-bar: transparent;
       --radius: 16px;
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #F3F5F9;
+      --bg2: #FFFFFF;
+      --glow: #E2F5EC;
+      --card: #FFFFFF;
+      --card-border: rgba(15, 23, 42, 0.09);
+      --surface-1: rgba(15, 23, 42, 0.025);
+      --surface-2: rgba(15, 23, 42, 0.04);
+      --surface-3: rgba(15, 23, 42, 0.05);
+      --surface-4: rgba(15, 23, 42, 0.07);
+      --text: #0F172A;
+      --sub: #64748B;
+      --note: #334155;
+      --accent: #059669;
+      --accent-soft: rgba(5, 150, 105, 0.12);
+      --on-accent: #FFFFFF;
+      --amber: #B45309;
+      --amber-soft: rgba(217, 119, 6, 0.13);
+      --blue: #0284C7;
+      --danger: #DC2626;
+      --danger-soft: rgba(220, 38, 38, 0.10);
+      --nav-bg: rgba(255, 255, 255, 0.92);
+      --backdrop: rgba(15, 23, 42, 0.45);
+      --status-bar: #0F172A;
+    }
+
+    :root[data-theme="light"] .card { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }
+
+    /* شريط خلف ساعة وبطارية الآيفون عشان تكون مقروءة في الوضع الفاتح */
+    .status-strip {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: env(safe-area-inset-top);
+      background: var(--status-bar);
+      z-index: 120;
+      pointer-events: none;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,7 +88,8 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Arabic", "Segoe UI", Tahoma, sans-serif;
-      background: radial-gradient(circle at top right, #13253A 0%, var(--bg) 55%);
+      background: radial-gradient(circle at top right, var(--glow) 0%, var(--bg) 55%);
+      background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       padding-top: env(safe-area-inset-top);
@@ -127,7 +185,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
-      background: rgba(255,255,255,0.04);
+      background: var(--surface-2);
       padding: 4px;
       border-radius: 12px;
       border: 1px solid var(--card-border);
@@ -150,7 +208,7 @@
 
     .segmented button.active {
       background: var(--accent);
-      color: #06281E;
+      color: var(--on-accent);
     }
 
     /* Calendar */
@@ -192,13 +250,14 @@
       position: relative;
       cursor: pointer;
       border: 1px solid transparent;
-      background: rgba(255,255,255,0.02);
+      background: var(--surface-1);
     }
 
     .day-cell.empty { background: transparent; cursor: default; }
-    .day-cell.today { background: var(--accent); color: #05251B; font-weight: 800; }
-    .day-cell.today .sub-d { color: #05251B; opacity: 0.85; }
+    .day-cell.today { background: var(--accent); color: var(--on-accent); font-weight: 800; }
+    .day-cell.today .sub-d { color: var(--on-accent); opacity: 0.85; }
     .day-cell.selected { border-color: var(--accent); background: var(--accent-soft); }
+    .day-cell.today.selected { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
     .day-cell .main-d { font-size: 15px; font-weight: 700; line-height: 1.1; }
     .day-cell .sub-d { font-size: 10px; color: var(--sub); margin-top: 2px; }
     .day-cell .dot {
@@ -206,7 +265,7 @@
       background: var(--amber);
       position: absolute; bottom: 4px;
     }
-    .day-cell.today .dot { background: #05251B; }
+    .day-cell.today .dot { background: var(--on-accent); }
     .day-cell.salary { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.55); }
     .day-cell .salary-ico { position: absolute; top: 1px; left: 2px; font-size: 8px; line-height: 1; }
 
@@ -219,7 +278,7 @@
     }
 
     .cd-box {
-      background: rgba(255,255,255,0.05);
+      background: var(--surface-2);
       border-radius: 12px;
       padding: 10px 6px;
       text-align: center;
@@ -230,7 +289,7 @@
 
     /* Events List */
     .event-card {
-      background: rgba(255,255,255,0.04);
+      background: var(--surface-2);
       border: 1px solid var(--card-border);
       border-radius: 14px;
       padding: 13px;
@@ -246,7 +305,7 @@
 
     .event-title { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
     .event-meta { font-size: 12px; color: var(--sub); line-height: 1.5; }
-    .event-note { font-size: 12px; color: #CBD5E1; margin-top: 6px; }
+    .event-note { font-size: 12px; color: var(--note); margin-top: 6px; }
 
     .badge {
       display: inline-block;
@@ -259,14 +318,14 @@
 
     .badge.green { background: var(--accent-soft); color: var(--accent); }
     .badge.amber { background: var(--amber-soft); color: var(--amber); }
-    .badge.gray { background: rgba(255,255,255,0.08); color: var(--sub); }
+    .badge.gray { background: var(--surface-4); color: var(--sub); }
 
     .event-actions {
       display: flex;
       gap: 8px;
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid var(--card-border);
     }
 
     .btn {
@@ -284,14 +343,15 @@
     }
 
     .btn.full { width: 100%; }
-    .btn.primary { background: var(--accent); color: #05251B; }
-    .btn.secondary { background: rgba(255,255,255,0.08); color: var(--text); }
+    .btn.primary { background: var(--accent); color: var(--on-accent); }
+    .btn.secondary { background: var(--surface-4); color: var(--text); }
     .btn.danger { background: var(--danger-soft); color: var(--danger); }
     .btn.sm { padding: 7px 11px; font-size: 12px; flex: 1; }
 
     /* Widget Preview */
     .widget-mock {
       background: linear-gradient(135deg, #0F172A, #162032);
+      color: #F8FAFC;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       padding: 14px 16px;
@@ -331,7 +391,7 @@
 
     input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
       width: 100%;
-      background: rgba(255,255,255,0.06);
+      background: var(--surface-3);
       border: 1px solid var(--card-border);
       color: var(--text);
       border-radius: 11px;
@@ -341,7 +401,7 @@
       outline: none;
     }
 
-    select option { background: #0F172A; color: #fff; }
+    select option { background: var(--bg2); color: var(--text); }
 
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .row-3 { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 8px; }
@@ -352,7 +412,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(11, 18, 32, 0.92);
+      background: var(--nav-bg);
       backdrop-filter: blur(18px);
       border-top: 1px solid var(--card-border);
       display: grid;
@@ -387,7 +447,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.65);
+      background: var(--backdrop);
       backdrop-filter: blur(6px);
       display: none;
       align-items: flex-end;
@@ -400,7 +460,7 @@
     .modal {
       width: 100%;
       max-width: 540px;
-      background: #111A2E;
+      background: var(--bg2);
       border: 1px solid var(--card-border);
       border-radius: 22px 22px 0 0;
       padding: 18px 16px calc(20px + env(safe-area-inset-bottom));
@@ -413,8 +473,8 @@
       top: calc(14px + env(safe-area-inset-top));
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: #10B981;
-      color: #05251B;
+      background: var(--accent);
+      color: var(--on-accent);
       padding: 10px 18px;
       border-radius: 999px;
       font-weight: 700;
@@ -452,6 +512,7 @@
   </style>
 </head>
 <body>
+  <div class="status-strip"></div>
   <div id="toast" class="toast"></div>
 
   <div class="container">
@@ -467,6 +528,7 @@
       <div class="top-actions">
         <button class="pill-btn accent" onclick="syncToWidget()">مزامنة</button>
         <button class="pill-btn" onclick="goToday()">اليوم</button>
+        <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="داكن / فاتح">🌙</button>
         <button class="icon-btn" onclick="openSettings()" title="الإعدادات">⚙️</button>
       </div>
     </div>
@@ -639,7 +701,7 @@
 
       <div class="toggle-row">
         <span style="font-size:13px;">مزامنة الويدجت تلقائياً بعد الحفظ</span>
-        <input type="checkbox" id="ev-autosync" style="width:20px; height:20px; accent-color:#34D399;" />
+        <input type="checkbox" id="ev-autosync" style="width:20px; height:20px; accent-color:var(--accent);" />
       </div>
 
       <div style="display:flex; gap:8px; margin-top:10px;">
@@ -657,6 +719,13 @@
         <button class="icon-btn" onclick="closeSettings()">✕</button>
       </div>
 
+      <label class="field-label">المظهر</label>
+      <div class="segmented three" style="margin-bottom:0;">
+        <button id="theme-auto" onclick="setTheme('auto')">تلقائي</button>
+        <button id="theme-dark" onclick="setTheme('dark')">🌙 داكن</button>
+        <button id="theme-light" onclick="setTheme('light')">☀️ فاتح</button>
+      </div>
+
       <label class="field-label">تعديل التاريخ الهجري (بالأيام)</label>
       <select id="set-offset" onchange="saveSettings()">
         <option value="-2">-2 يوم</option>
@@ -671,12 +740,12 @@
 
       <div class="toggle-row">
         <span style="font-size:13px;">تفعيل المزامنة التلقائية عند حفظ موعد</span>
-        <input type="checkbox" id="set-autosync" onchange="saveSettings()" style="width:20px; height:20px; accent-color:#34D399;" />
+        <input type="checkbox" id="set-autosync" onchange="saveSettings()" style="width:20px; height:20px; accent-color:var(--accent);" />
       </div>
 
       <div class="toggle-row">
         <span style="font-size:13px;">💰 إظهار يوم الرواتب (27 من كل شهر)</span>
-        <input type="checkbox" id="set-salary" onchange="saveSettings()" style="width:20px; height:20px; accent-color:#34D399;" />
+        <input type="checkbox" id="set-salary" onchange="saveSettings()" style="width:20px; height:20px; accent-color:var(--accent);" />
       </div>
 
       <button class="btn primary full" style="margin-top:12px;" onclick="closeSettings()">تم</button>
@@ -906,10 +975,11 @@ Script.complete();</script>
           hijriOffset: Number(s.hijriOffset || 0),
           scriptName: s.scriptName || "Hilali",
           autoSync: s.autoSync !== false,
-          showSalary: s.showSalary !== false
+          showSalary: s.showSalary !== false,
+          theme: ["auto", "dark", "light"].includes(s.theme) ? s.theme : "auto"
         };
       } catch {
-        return { hijriOffset: 0, scriptName: "Hilali", autoSync: true, showSalary: true };
+        return { hijriOffset: 0, scriptName: "Hilali", autoSync: true, showSalary: true, theme: "auto" };
       }
     }
 
@@ -1131,7 +1201,7 @@ Script.complete();</script>
         <div style="font-size:18px; font-weight:800;">${formatHijri(today)}</div>
         <div style="font-size:13px; color:var(--sub); margin-top:2px;">الموافق ${formatGreg(today)}</div>
         ${nearest ? `
-          <div style="margin-top:10px; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div style="margin-top:10px; padding:8px 10px; border-radius:10px; background:var(--surface-2); display:flex; justify-content:space-between; align-items:center; gap:8px;">
             <span style="font-size:12px;">أقرب موعد: <strong>${escapeHtml(nearest.title)}</strong></span>
             <span class="badge ${badge.cls}">${badge.text}</span>
           </div>
@@ -1528,7 +1598,37 @@ Script.complete();</script>
       renderWidgetPreview();
     }
 
+    // Theme (داكن / فاتح / تلقائي)
+    const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function resolvedTheme() {
+      if (settings.theme === "auto") return darkQuery.matches ? "dark" : "light";
+      return settings.theme;
+    }
+
+    function applyTheme() {
+      const t = resolvedTheme();
+      document.documentElement.setAttribute("data-theme", t);
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "light" ? "#F3F5F9" : "#0B1220");
+      document.getElementById("theme-btn").textContent = t === "light" ? "☀️" : "🌙";
+      ["auto", "dark", "light"].forEach(k => document.getElementById("theme-" + k).classList.toggle("active", settings.theme === k));
+    }
+
+    function setTheme(theme) {
+      settings.theme = theme;
+      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
+      applyTheme();
+    }
+
+    function toggleTheme() {
+      setTheme(resolvedTheme() === "light" ? "dark" : "light");
+      showToast(resolvedTheme() === "light" ? "☀️ الوضع الفاتح" : "🌙 الوضع الداكن");
+    }
+
+    darkQuery.addEventListener("change", () => { if (settings.theme === "auto") applyTheme(); });
+
     // Init
+    applyTheme();
     renderHeader();
     renderCalendar();
     renderEventsTab();
