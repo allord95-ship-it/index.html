@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="هلالي" />
@@ -207,6 +207,8 @@
       position: absolute; bottom: 4px;
     }
     .day-cell.today .dot { background: #05251B; }
+    .day-cell.salary { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.55); }
+    .day-cell .salary-ico { position: absolute; top: 1px; left: 2px; font-size: 8px; line-height: 1; }
 
     /* Countdown */
     .countdown-grid {
@@ -672,6 +674,11 @@
         <input type="checkbox" id="set-autosync" onchange="saveSettings()" style="width:20px; height:20px; accent-color:#34D399;" />
       </div>
 
+      <div class="toggle-row">
+        <span style="font-size:13px;">💰 إظهار يوم الرواتب (27 من كل شهر)</span>
+        <input type="checkbox" id="set-salary" onchange="saveSettings()" style="width:20px; height:20px; accent-color:#34D399;" />
+      </div>
+
       <button class="btn primary full" style="margin-top:12px;" onclick="closeSettings()">تم</button>
     </div>
   </div>
@@ -691,19 +698,41 @@ function saveEvents(list) {
   fm.writeString(filePath, JSON.stringify(list));
 }
 
-let events = loadEvents();
+const settingsPath = fm.joinPath(fm.documentsDirectory(), "hilali_settings.json");
+function loadSettings() {
+  if (fm.fileExists(settingsPath)) {
+    try { return JSON.parse(fm.readString(settingsPath)); } catch (e) {}
+  }
+  return { offset: 0, salary: true };
+}
 
-if (args.queryParameters && args.queryParameters.events) {
+function localYMD(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+let events = loadEvents();
+let settings = loadSettings();
+const qp = args.queryParameters || {};
+
+if (qp.events) {
   try {
-    const incoming = JSON.parse(args.queryParameters.events);
+    const incoming = JSON.parse(qp.events);
     if (Array.isArray(incoming)) {
-      events = incoming;
+      // نحتفظ بالمواعيد المضافة من Scriptable ونستبدل مواعيد الصفحة فقط
+      const local = events.filter(ev => ev.src !== "web");
+      events = local.concat(incoming.map(ev => ({ title: ev.title, date: ev.date, src: "web" })));
       saveEvents(events);
     }
   } catch (e) {}
 }
 
-if (!config.runsInWidget && !(args.queryParameters && args.queryParameters.events)) {
+if (qp.offset !== undefined || qp.salary !== undefined) {
+  if (qp.offset !== undefined) settings.offset = parseInt(qp.offset, 10) || 0;
+  if (qp.salary !== undefined) settings.salary = qp.salary === "1";
+  fm.writeString(settingsPath, JSON.stringify(settings));
+}
+
+if (!config.runsInWidget && !qp.events) {
   const menu = new Alert();
   menu.title = "مواعيد هلالي";
   menu.addAction("إضافة موعد جديد");
@@ -716,7 +745,7 @@ if (!config.runsInWidget && !(args.queryParameters && args.queryParameters.event
     const add = new Alert();
     add.title = "موعد جديد";
     add.addTextField("اسم الموعد", "");
-    add.addTextField("التاريخ (YYYY-MM-DD)", new Date().toISOString().slice(0, 10));
+    add.addTextField("التاريخ (YYYY-MM-DD)", localYMD(new Date()));
     add.addAction("حفظ");
     add.addCancelAction("إلغاء");
     if (await add.presentAlert() === 0) {
@@ -752,7 +781,7 @@ const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
 const hijriFull = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
   weekday: "long", day: "numeric", month: "long", year: "numeric"
-}).format(now);
+}).format(new Date(now.getFullYear(), now.getMonth(), now.getDate() + (settings.offset || 0)));
 
 const gregShort = new Intl.DateTimeFormat("ar-SA", {
   day: "numeric", month: "short"
@@ -786,7 +815,14 @@ function getDaysInfo(dateStr) {
   return { diff, text };
 }
 
-const upcoming = events
+const allItems = events.slice();
+if (settings.salary !== false) {
+  let pay = new Date(now.getFullYear(), now.getMonth(), 27);
+  if (pay < startOfToday) pay = new Date(now.getFullYear(), now.getMonth() + 1, 27);
+  allItems.push({ title: "💰 يوم الرواتب", date: localYMD(pay) });
+}
+
+const upcoming = allItems
   .map(ev => ({ ...ev, info: getDaysInfo(ev.date) }))
   .filter(ev => ev.info !== null)
   .sort((a, b) => a.info.diff - b.info.diff)
@@ -857,8 +893,8 @@ Script.complete();</script>
     let convDir = "h2g";
     let lastConvertedYMD = toYMD(new Date());
 
-    const today = new Date();
-    const todayYMD = toYMD(today);
+    let today = new Date();
+    let todayYMD = toYMD(today);
     let selectedDateYMD = todayYMD;
     let viewHijri = getHijriParts(today);
     let viewGreg = { year: today.getFullYear(), month: today.getMonth() + 1 };
@@ -869,11 +905,40 @@ Script.complete();</script>
         return {
           hijriOffset: Number(s.hijriOffset || 0),
           scriptName: s.scriptName || "Hilali",
-          autoSync: s.autoSync !== false
+          autoSync: s.autoSync !== false,
+          showSalary: s.showSalary !== false
         };
       } catch {
-        return { hijriOffset: 0, scriptName: "Hilali", autoSync: true };
+        return { hijriOffset: 0, scriptName: "Hilali", autoSync: true, showSalary: true };
       }
+    }
+
+    // يوم الرواتب: 27 من كل شهر ميلادي
+    const SALARY_DAY = 27;
+    const SALARY_TITLE = "💰 يوم الرواتب";
+
+    function isSalaryDay(ymd) {
+      return settings.showSalary && parseYMD(ymd).getDate() === SALARY_DAY;
+    }
+
+    function salaryItem(ymd) {
+      return { id: "salary_" + ymd, title: SALARY_TITLE, date: ymd, cat: "رواتب", isPublic: true, isSalary: true };
+    }
+
+    function getUpcomingSalaries(count) {
+      if (!settings.showSalary) return [];
+      const list = [];
+      let d = new Date(today.getFullYear(), today.getMonth(), SALARY_DAY);
+      if (daysDiffFromToday(toYMD(d)) < 0) d = new Date(today.getFullYear(), today.getMonth() + 1, SALARY_DAY);
+      for (let i = 0; i < count; i++) {
+        list.push(salaryItem(toYMD(new Date(d.getFullYear(), d.getMonth() + i, SALARY_DAY))));
+      }
+      return list;
+    }
+
+    // مواعيدي + أقرب يوم رواتب
+    function getItemsWithSalary() {
+      return [...events, ...getUpcomingSalaries(1)];
     }
 
     function loadEvents() {
@@ -983,6 +1048,7 @@ Script.complete();</script>
         if (daysDiffFromToday(toYMD(gd)) < 0) gd = new Date(today.getFullYear() + 1, o.m - 1, o.d);
         list.push({ id: "pub_" + o.title, title: o.title, date: toYMD(gd), cat: "وطنية", isPublic: true });
       });
+      list.push(...getUpcomingSalaries(1));
       return list.sort((a, b) => a.date.localeCompare(b.date));
     }
 
@@ -994,7 +1060,9 @@ Script.complete();</script>
         .map(e => ({ title: e.title, date: e.date }));
 
       const scriptName = (settings.scriptName || "Hilali").trim();
-      const url = `scriptable:///run?scriptName=${encodeURIComponent(scriptName)}&events=${encodeURIComponent(JSON.stringify(payload))}`;
+      const url = `scriptable:///run?scriptName=${encodeURIComponent(scriptName)}` +
+        `&events=${encodeURIComponent(JSON.stringify(payload))}` +
+        `&offset=${settings.hijriOffset}&salary=${settings.showSalary ? 1 : 0}`;
       showToast("جاري تحديث الويدجت...");
       window.location.href = url;
     }
@@ -1054,7 +1122,7 @@ Script.complete();</script>
     }
 
     function renderCalendar() {
-      const upcoming = events.filter(e => daysDiffFromToday(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+      const upcoming = getItemsWithSalary().filter(e => daysDiffFromToday(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
       const nearest = upcoming[0];
       const badge = nearest ? formatDaysBadge(daysDiffFromToday(nearest.date)) : null;
 
@@ -1125,8 +1193,9 @@ Script.complete();</script>
         if (!c) {
           el.className = "day-cell empty";
         } else {
-          el.className = "day-cell" + (c.ymd === todayYMD ? " today" : "") + (c.ymd === selectedDateYMD ? " selected" : "");
-          el.innerHTML = `<span class="main-d">${c.main}</span><span class="sub-d">${c.sub}</span>${eventDates.has(c.ymd) ? '<span class="dot"></span>' : ""}`;
+          const salary = isSalaryDay(c.ymd);
+          el.className = "day-cell" + (c.ymd === todayYMD ? " today" : "") + (c.ymd === selectedDateYMD ? " selected" : "") + (salary ? " salary" : "");
+          el.innerHTML = `${salary ? '<span class="salary-ico">💰</span>' : ""}<span class="main-d">${c.main}</span><span class="sub-d">${c.sub}</span>${eventDates.has(c.ymd) ? '<span class="dot"></span>' : ""}`;
           el.onclick = () => { selectedDateYMD = c.ymd; renderCalendar(); };
         }
         grid.appendChild(el);
@@ -1141,6 +1210,7 @@ Script.complete();</script>
         (selectedDateYMD === todayYMD ? "اليوم • " : "") + formatHijri(d);
 
       const list = events.filter(e => e.date === selectedDateYMD);
+      if (isSalaryDay(selectedDateYMD)) list.unshift(salaryItem(selectedDateYMD));
       const box = document.getElementById("selected-day-events");
       if (list.length === 0) {
         box.innerHTML = `<div style="font-size:13px; color:var(--sub); padding:6px 0;">لا توجد مواعيد في هذا اليوم (${formatGreg(d)})</div>`;
@@ -1153,7 +1223,7 @@ Script.complete();</script>
               <div class="event-title">${escapeHtml(ev.title)}</div>
               <div class="event-meta">${ev.time ? "الساعة " + ev.time + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
             </div>
-            <button class="pill-btn" onclick="openEventModal('${ev.id}')">تعديل</button>
+            ${ev.isPublic ? "" : `<button class="pill-btn" onclick="openEventModal('${ev.id}')">تعديل</button>`}
           </div>
         </div>
       `).join("");
@@ -1211,7 +1281,7 @@ Script.complete();</script>
     function renderCountdown() {
       const box = document.getElementById("countdown-card");
       const now = new Date();
-      const upcoming = events
+      const upcoming = getItemsWithSalary()
         .map(ev => {
           const target = parseYMD(ev.date);
           if (ev.time) {
@@ -1307,6 +1377,8 @@ Script.complete();</script>
     }
 
     function deleteEvent(id) {
+      const ev = events.find(e => e.id === id);
+      if (!ev || !confirm(`حذف «${ev.title}»؟`)) return;
       events = events.filter(e => e.id !== id);
       persistEvents();
       renderCalendar();
@@ -1323,7 +1395,7 @@ Script.complete();</script>
       document.getElementById("widget-script-name").value = settings.scriptName;
       document.getElementById("scriptable-code-view").textContent = document.getElementById("scriptable-template").textContent;
 
-      const upcoming = events
+      const upcoming = getItemsWithSalary()
         .filter(e => daysDiffFromToday(e.date) >= 0)
         .sort((a, b) => a.date.localeCompare(b.date))
         .slice(0, 3);
@@ -1396,8 +1468,23 @@ Script.complete();</script>
       if (convDir === "h2g") {
         const day = parseInt(document.getElementById("ch-day").value, 10) || 1;
         const month = parseInt(document.getElementById("ch-month").value, 10) || 1;
-        const year = parseInt(document.getElementById("ch-year").value, 10) || 1448;
+        const year = parseInt(document.getElementById("ch-year").value, 10) || getHijriParts(today).year;
         d = hijriToGregDate(year, month, day);
+
+        // تأكد إن التاريخ موجود فعلاً (بعض الأشهر 29 يوم فقط)
+        const back = getHijriParts(d);
+        if (back.year !== year || back.month !== month || back.day !== day) {
+          const first = hijriToGregDate(year, month, 1);
+          const next = month === 12 ? hijriToGregDate(year + 1, 1, 1) : hijriToGregDate(year, month + 1, 1);
+          const len = Math.round((next - first) / 86400000);
+          const valid = len === 29 || len === 30;
+          document.getElementById("conv-result").innerHTML = `
+            <div style="font-size:15px; font-weight:800; color:var(--danger);">التاريخ غير موجود</div>
+            <div style="font-size:13px; color:var(--sub); margin-top:6px;">
+              ${valid ? `شهر ${HIJRI_MONTHS[month - 1]} ${year} هـ فيه ${len} يوم فقط` : "تأكد من اليوم والسنة"}
+            </div>`;
+          return;
+        }
       } else {
         const val = document.getElementById("cg-date").value;
         d = val ? parseYMD(val) : today;
@@ -1421,6 +1508,7 @@ Script.complete();</script>
       document.getElementById("set-offset").value = String(settings.hijriOffset);
       document.getElementById("set-script").value = settings.scriptName;
       document.getElementById("set-autosync").checked = settings.autoSync;
+      document.getElementById("set-salary").checked = settings.showSalary;
       document.getElementById("settings-modal").classList.add("open");
     }
 
@@ -1432,6 +1520,7 @@ Script.complete();</script>
       settings.hijriOffset = parseInt(document.getElementById("set-offset").value, 10) || 0;
       settings.scriptName = (document.getElementById("set-script").value || "Hilali").trim();
       settings.autoSync = document.getElementById("set-autosync").checked;
+      settings.showSalary = document.getElementById("set-salary").checked;
       localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
       renderHeader();
       renderCalendar();
@@ -1445,7 +1534,26 @@ Script.complete();</script>
     renderEventsTab();
     renderWidgetPreview();
     initConverter();
+    // تحديث "اليوم" إذا عدّى منتصف الليل والتطبيق مفتوح
+    function refreshToday() {
+      const now = new Date();
+      if (toYMD(now) === todayYMD) return;
+      const wasOnToday = selectedDateYMD === todayYMD;
+      today = now;
+      todayYMD = toYMD(now);
+      if (wasOnToday) selectedDateYMD = todayYMD;
+      renderHeader();
+      renderCalendar();
+      renderEventsTab();
+      renderWidgetPreview();
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshToday();
+    });
+
     setInterval(() => {
+      refreshToday();
       if (document.getElementById("tab-events").classList.contains("active")) renderCountdown();
     }, 1000);
   </script>
