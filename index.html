@@ -176,6 +176,7 @@
     .icon-btn.sm svg { width: 17px; height: 17px; }
     .icon-btn.danger { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
     .ev-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .icon-btn.accent { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
     .pill-btn { height: 38px; }
     .pill-btn.accent { background: var(--accent-soft); border-color: rgba(52, 211, 153, 0.35); color: var(--accent); }
@@ -1509,11 +1510,17 @@ Script.complete();</script>
         box.innerHTML = `<div style="font-size:13px; color:var(--sub); padding:6px 0;">لا توجد مواعيد في هذا اليوم</div>`;
         return;
       }
-      box.innerHTML = list.map(ev => `
+      box.innerHTML = list.map(ev => {
+        // كم يوم باقي للموعد
+        const b = ev.date ? formatDaysBadge(daysDiffFromToday(ev.date)) : null;
+        return `
         <div class="event-card" style="margin-bottom:8px;">
           <div class="event-top">
-            <div>
-              <div class="event-title">${escapeHtml(ev.title)}</div>
+            <div style="min-width:0;">
+              <div class="event-title title-row">
+                <span>${escapeHtml(ev.title)}</span>
+                ${b ? `<span class="badge ${b.cls}">${b.text}</span>` : ""}
+              </div>
               <div class="event-meta">${ev.time ? "الساعة " + ev.time + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
               ${ev.isPublic && ev.note ? `<div class="event-note">${escapeHtml(ev.note)}</div>` : ""}
             </div>
@@ -1523,7 +1530,8 @@ Script.complete();</script>
             </div>`}
           </div>
         </div>
-      `).join("");
+      `;
+      }).join("");
     }
 
     function setEventFilter(f) {
