@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="سناب HD" />
+  <meta name="theme-color" content="#08131F" />
+  <link rel="apple-touch-icon" href="snap-icon.png" />
+  <link rel="icon" href="snap-icon.png" />
+  <title>سناب HD</title>
+  <script>
+    // نفس إعداد الثيم حق تطبيق التقويم (ليلي / نهاري / تلقائي)
+    (function () {
+      var pref = "auto";
+      try { pref = (JSON.parse(localStorage.getItem("hilali_settings_v2") || "{}").theme) || "auto"; } catch (e) {}
+      var light = pref === "light" || (pref === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches);
+      document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08131F;
+      --bg2: #0E1C2E;
+      --glow: #0F2F4A;
+      --card: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --surface-2: rgba(255, 255, 255, 0.045);
+      --surface-3: rgba(255, 255, 255, 0.07);
+      --text: #F8FAFC;
+      --sub: #94A3B8;
+      --note: #CBD5E1;
+      --accent: #38BDF8;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --on-accent: #04263A;
+      --ok: #34D399;
+      --ok-soft: rgba(52, 211, 153, 0.15);
+      --amber: #F59E0B;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --danger: #F87171;
+      --danger-soft: rgba(248, 113, 113, 0.14);
+      --nav-bg: rgba(8, 19, 31, 0.9);
+      --thumb-bg: #000;
+      --radius: 18px;
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #F1F6FB;
+      --bg2: #FFFFFF;
+      --glow: #D9ECFA;
+      --card: #FFFFFF;
+      --card-border: rgba(15, 23, 42, 0.09);
+      --surface-2: rgba(15, 23, 42, 0.04);
+      --surface-3: rgba(15, 23, 42, 0.06);
+      --text: #0F172A;
+      --sub: #64748B;
+      --note: #334155;
+      --accent: #0369A1;
+      --accent-soft: rgba(3, 105, 161, 0.11);
+      --on-accent: #FFFFFF;
+      --ok: #059669;
+      --ok-soft: rgba(5, 150, 105, 0.11);
+      --amber: #B45309;
+      --amber-soft: rgba(217, 119, 6, 0.12);
+      --danger: #DC2626;
+      --danger-soft: rgba(220, 38, 38, 0.1);
+      --nav-bg: rgba(255, 255, 255, 0.9);
+      --thumb-bg: #0F172A;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(120% 60% at 50% -10%, var(--glow) 0%, var(--bg) 60%) fixed, var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Arabic", "Segoe UI", Tahoma, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-user-select: none; user-select: none;
+    }
+    button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+    svg { display: block; }
+
+    .wrap {
+      max-width: 560px; margin: 0 auto;
+      padding: calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 110px);
+    }
+
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .logo {
+      width: 46px; height: 46px; border-radius: 14px; flex: none;
+      background: linear-gradient(145deg, #38BDF8, #0369A1);
+      display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 17px; letter-spacing: .5px;
+      box-shadow: 0 6px 18px rgba(3, 105, 161, .35);
+    }
+    header h1 { margin: 0; font-size: 22px; font-weight: 800; }
+    header p { margin: 2px 0 0; color: var(--sub); font-size: 13.5px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius); padding: 16px;
+    }
+    :root[data-theme="light"] .card { box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+
+    /* الحالة الفاضية */
+    .empty { text-align: center; padding: 34px 20px 26px; }
+    .empty .big-icon {
+      width: 74px; height: 74px; margin: 0 auto 14px; border-radius: 22px;
+      background: var(--accent-soft); color: var(--accent); display: grid; place-items: center;
+    }
+    .empty h2 { margin: 0 0 6px; font-size: 18px; }
+    .empty p { margin: 0 0 20px; color: var(--sub); font-size: 14px; line-height: 1.7; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 50px; padding: 0 20px; border-radius: 15px; font-weight: 700; font-size: 15.5px;
+      transition: transform .12s ease, opacity .2s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn[disabled] { opacity: .45; pointer-events: none; }
+    .btn-primary { background: var(--accent); color: var(--on-accent); }
+    .btn-soft { background: var(--surface-3); color: var(--text); }
+    .btn-block { width: 100%; }
+
+    /* قائمة الملفات */
+    .list { display: flex; flex-direction: column; gap: 12px; }
+    .item { display: flex; gap: 14px; padding: 12px; }
+    .thumb {
+      width: 78px; height: 139px; flex: none; border-radius: 12px; overflow: hidden;
+      background: var(--thumb-bg); position: relative;
+    }
+    .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .item[data-state="ready"] .thumb img, .item[data-state="ready"] .thumb video { object-fit: contain; }
+    .thumb .kind {
+      position: absolute; top: 6px; inset-inline-start: 6px;
+      background: rgba(0, 0, 0, .55); color: #fff; border-radius: 7px; padding: 2px 6px;
+      font-size: 10.5px; font-weight: 700; display: flex; align-items: center; gap: 3px;
+    }
+    .thumb-err { width: 100%; height: 100%; display: grid; place-items: center; color: var(--danger); background: var(--danger-soft); }
+    .item[data-state="error"] .thumb { height: 78px; }
+    .item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+    .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .item-title { font-weight: 700; font-size: 14.5px; }
+    .item-meta { color: var(--sub); font-size: 12px; margin-top: 2px; direction: rtl; }
+    .item-meta bdi { direction: ltr; unicode-bidi: isolate; }
+    .x-btn {
+      width: 30px; height: 30px; border-radius: 10px; flex: none;
+      display: grid; place-items: center; color: var(--sub); background: var(--surface-2);
+    }
+
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface-2); padding: 3px; border-radius: 11px; }
+    .seg button { height: 32px; border-radius: 9px; font-size: 12.5px; font-weight: 600; color: var(--sub); }
+    .seg button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+    :root[data-theme="dark"] .seg button.on { background: rgba(255, 255, 255, .12); }
+    .item.busy .seg { opacity: .5; pointer-events: none; }
+
+    .status { font-size: 12.5px; display: flex; align-items: center; gap: 6px; color: var(--sub); line-height: 1.5; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--danger); }
+    .status.wait { color: var(--amber); }
+    .bar { height: 5px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .25s linear; }
+    .note { font-size: 11.5px; color: var(--amber); background: var(--amber-soft); padding: 6px 9px; border-radius: 9px; line-height: 1.55; }
+
+    .send { height: 40px; font-size: 14px; border-radius: 12px; margin-top: auto; }
+
+    .spin { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* نصايح */
+    details.tips { margin-top: 16px; padding: 0; }
+    details.tips summary {
+      list-style: none; padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 14.5px; cursor: pointer;
+    }
+    details.tips summary::-webkit-details-marker { display: none; }
+    details.tips summary .chev { margin-inline-start: auto; transition: transform .2s; color: var(--sub); }
+    details.tips[open] summary .chev { transform: rotate(180deg); }
+    details.tips ol { margin: 0; padding: 0 34px 16px 18px; color: var(--note); font-size: 13.5px; line-height: 1.85; }
+    details.tips li { margin-bottom: 4px; }
+    details.tips b { color: var(--text); }
+
+    /* الشريط السفلي */
+    .dock {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      background: var(--nav-bg); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 16px calc(env(safe-area-inset-bottom) + 10px);
+    }
+    .dock-in { max-width: 560px; margin: 0 auto; display: flex; gap: 10px; }
+    .dock .btn-primary { flex: 1; }
+    .dock .btn-soft { width: 56px; padding: 0; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 86px); z-index: 20;
+      transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+      background: rgba(15, 23, 42, .92); color: #fff; padding: 10px 16px; border-radius: 12px;
+      font-size: 13.5px; transition: all .25s ease; max-width: calc(100% - 32px); text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* الفيديو المخفي اللي نحوّل منه */
+    #engine { position: fixed; width: 2px; height: 2px; opacity: .01; pointer-events: none; left: 0; top: 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">HD</div>
+      <div>
+        <h1>سناب HD</h1>
+        <p>جهّز صورك وفيديوهاتك للسناب بأعلى جودة</p>
+      </div>
+    </header>
+
+    <div id="empty" class="card empty">
+      <div class="big-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+      </div>
+      <h2>اختر من الاستديو</h2>
+      <p>صور أو فيديوهات، وتقدر تختار أكثر من وحدة.<br />نحوّلها لمقاس السناب بالضبط عشان ما تتغبّش.</p>
+      <label class="btn btn-primary btn-block" for="picker">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        اختر صور وفيديوهات
+      </label>
+    </div>
+
+    <div id="list" class="list"></div>
+
+    <details class="card tips" id="tips">
+      <summary>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber)"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
+        نصايح لأحسن جودة
+        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <ol>
+        <li>من اللايتروم صدّر بـ <b>أكبر مقاس وجودة 100</b>، والتطبيق يتكفّل بالباقي.</li>
+        <li>بعد ما تضغط <b>«أرسل للسناب»</b> اختر <b>Snapchat</b> من القائمة. إذا ما لقيته اضغط «المزيد» وفعّله.</li>
+        <li>تقدر بدالها تختار <b>«حفظ»</b> وبعدين ترفع من الذكريات ← ألبوم الكاميرا في السناب.</li>
+        <li>في إعدادات السناب، إذا عندك خيار <b>«موفّر البيانات»</b> خله مقفل.</li>
+        <li>أثناء تحويل الفيديو <b>خل الصفحة مفتوحة</b> ولا تقفل الشاشة. التحويل ياخذ نفس طول المقطع.</li>
+        <li><b>«ملء الشاشة»</b> يقص الأطراف عشان تعبي الشاشة، و<b>«كامل بدون قص»</b> يحط الصورة كاملة فوق خلفية مغبّشة منها.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="dock" id="dock" hidden>
+    <div class="dock-in">
+      <label class="btn btn-soft" for="picker" aria-label="أضف">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </label>
+      <button class="btn btn-primary" id="mainBtn"></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <input type="file" id="picker" accept="image/*,video/*" multiple hidden />
+  <video id="engine" playsinline webkit-playsinline preload="auto"></video>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // ======================= المحرك (دوال قابلة للاختبار) =======================
+    var TARGET = { w: 1080, h: 1920 };
+    var MAX_CANVAS_AREA = 16777216; // حد الآيفون لمساحة الـ canvas
+    var JPEG_QUALITY = 0.95;
+    var VIDEO_BPS = 12000000;
+    var FPS = 30;
+
+    function autoMode(w, h) {
+      var r = w / h;
+      return r >= 0.5 && r <= 0.68 ? "fill" : "fit";
+    }
+
+    function planLayout(w, h, mode) {
+      var T = TARGET, tr = T.w / T.h;
+      if (mode === "fill") {
+        var sx = 0, sy = 0, sw = w, sh = h;
+        if (w / h > tr) { sw = h * tr; sx = (w - sw) / 2; }
+        else { sh = w / tr; sy = (h - sh) / 2; }
+        return { sx: sx, sy: sy, sw: sw, sh: sh, dx: 0, dy: 0, dw: T.w, dh: T.h };
+      }
+      var s = Math.min(T.w / w, T.h / h);
+      var dw = Math.round(w * s), dh = Math.round(h * s);
+      return { sx: 0, sy: 0, sw: w, sh: h, dx: Math.round((T.w - dw) / 2), dy: Math.round((T.h - dh) / 2), dw: dw, dh: dh };
+    }
+
+    // أول خطوة تصغير: أكبر مضاعف (2^k) للمقاس النهائي يدخل في الصورة وفي حد الآيفون
+    function firstStepSize(sw, sh, dw, dh) {
+      var ratio = Math.min(sw / dw, sh / dh);
+      var k = ratio >= 1 ? Math.floor(Math.log2(ratio) + 1e-9) : 0;
+      while (k > 0 && dw * dh * Math.pow(4, k) > MAX_CANVAS_AREA) k--;
+      var m = Math.pow(2, k);
+      return { w: dw * m, h: dh * m };
+    }
+
+    function makeCanvas(w, h) {
+      var c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      return c;
+    }
+    function ctx2d(c) {
+      var x = c.getContext("2d", { alpha: false });
+      x.imageSmoothingEnabled = true;
+      x.imageSmoothingQuality = "high";
+      return x;
+    }
+    function free(c) { if (c) { c.width = 0; c.height = 0; } }
+
+    function loadImage(file) {
+      return new Promise(function (resolve, reject) {
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+          if (!img.naturalWidth) { URL.revokeObjectURL(url); return reject(new Error("decode")); }
+          resolve({ img: img, url: url });
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("decode")); };
+        img.src = url;
+      });
+    }
+
+    // تصغير على مراحل (النص كل مرة) عشان التفاصيل تبقى ناعمة وحادة
+    function scaleDown(src, sx, sy, sw, sh, dw, dh) {
+      var first = firstStepSize(sw, sh, dw, dh);
+      var c = makeCanvas(first.w, first.h);
+      ctx2d(c).drawImage(src, sx, sy, sw, sh, 0, 0, first.w, first.h);
+      while (c.width > dw) {
+        var n = makeCanvas(Math.max(dw, Math.round(c.width / 2)), Math.max(dh, Math.round(c.height / 2)));
+        ctx2d(n).drawImage(c, 0, 0, n.width, n.height);
+        free(c);
+        c = n;
+      }
+      return c;
+    }
+
+    // حدّة خفيفة (unsharp mask 3x3)
+    function sharpen(c, amount) {
+      var w = c.width, h = c.height, x = c.getContext("2d");
+      var id = x.getImageData(0, 0, w, h), d = id.data, s = new Uint8ClampedArray(d);
+      var row = w * 4;
+      for (var y = 1; y < h - 1; y++) {
+        for (var xx = 1; xx < w - 1; xx++) {
+          var i = y * row + xx * 4;
+          for (var ch = 0; ch < 3; ch++) {
+            var p = i + ch;
+            var blur = (s[p - row - 4] + s[p - row] + s[p - row + 4] + s[p - 4] + s[p] + s[p + 4] + s[p + row - 4] + s[p + row] + s[p + row + 4]) / 9;
+            d[p] = s[p] + amount * (s[p] - blur);
+          }
+        }
+      }
+      x.putImageData(id, 0, 0);
+    }
+
+    // خلفية مغبّشة من نفس الصورة (لوضع «كامل بدون قص»)
+    function drawBlurBackground(ctx, src, w, h, tmp) {
+      var cover = planLayout(w, h, "fill");
+      var a = tmp && tmp.a || makeCanvas(108, 192), b = tmp && tmp.b || makeCanvas(27, 48);
+      ctx2d(a).drawImage(src, cover.sx, cover.sy, cover.sw, cover.sh, 0, 0, a.width, a.height);
+      ctx2d(b).drawImage(a, 0, 0, b.width, b.height);
+      ctx.drawImage(b, 0, 0, TARGET.w, TARGET.h);
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fillRect(0, 0, TARGET.w, TARGET.h);
+      return { a: a, b: b };
+    }
+
+    function toBlob(c, type, q) {
+      return new Promise(function (resolve, reject) {
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error("encode")); }, type, q);
+      });
+    }
+
+    function processImage(file, mode) {
+      return loadImage(file).then(function (r) {
+        var img = r.img, w = img.naturalWidth, h = img.naturalHeight;
+        var p = planLayout(w, h, mode);
+        var out = makeCanvas(TARGET.w, TARGET.h), ox = ctx2d(out);
+        ox.fillStyle = "#000"; ox.fillRect(0, 0, TARGET.w, TARGET.h);
+        if (mode === "fit") { var t = drawBlurBackground(ox, img, w, h); free(t.a); free(t.b); }
+        var content = scaleDown(img, p.sx, p.sy, p.sw, p.sh, p.dw, p.dh);
+        if (p.dw < p.sw * 0.9) sharpen(content, 0.35);
+        ox.drawImage(content, p.dx, p.dy);
+        free(content);
+        URL.revokeObjectURL(r.url);
+        return toBlob(out, "image/jpeg", JPEG_QUALITY).then(function (b) { free(out); return b; });
+      });
+    }
+
+    function pickMime() {
+      if (typeof MediaRecorder === "undefined") return "";
+      var list = [
+        "video/mp4;codecs=avc1.640028,mp4a.40.2",
+        "video/mp4;codecs=avc1,mp4a.40.2",
+        "video/mp4;codecs=avc1",
+        "video/mp4",
+        "video/webm;codecs=vp9,opus",
+        "video/webm"
+      ];
+      for (var i = 0; i < list.length; i++) if (MediaRecorder.isTypeSupported(list[i])) return list[i];
+      return "";
+    }
+
+    function needsSplitNote(sec) { return sec > 60; }
+
+    // لازم تنادى داخل ضغطة المستخدم: تشغّل الصوت وتسمح للفيديو يشتغل بصوته
+    function unlock(video, actx) {
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+      try { if (actx && actx.state !== "running") actx.resume(); } catch (e) {}
+      // نوجّه صوت الفيديو للمسجّل من البداية عشان ما يطلع صوت من السماعة
+      try { if (actx) elementSource(video, actx); } catch (e) {}
+      try {
+        video.muted = false;
+        var p = video.play();
+        if (p && p.then) p.then(function () { video.pause(); }, function () {});
+      } catch (e) {}
+    }
+
+    function once(el, ok, bad, ms) {
+      return new Promise(function (resolve, reject) {
+        var t = ms ? setTimeout(function () { done(); reject(new Error("timeout")); }, ms) : null;
+        function done() { clearTimeout(t); el.removeEventListener(ok, onOk); el.removeEventListener(bad, onBad); }
+        function onOk() { done(); resolve(); }
+        function onBad() { done(); reject(new Error("decode")); }
+        el.addEventListener(ok, onOk); el.addEventListener(bad, onBad);
+      });
+    }
+
+    function elementSource(video, actx) {
+      if (!video.__snapSrc || video.__snapCtx !== actx) {
+        video.__snapSrc = actx.createMediaElementSource(video);
+        video.__snapCtx = actx;
+      }
+      return video.__snapSrc;
+    }
+
+    function processVideo(file, mode, onProgress, video, actx) {
+      onProgress = onProgress || function () {};
+      var url = URL.createObjectURL(file);
+      var cleanup = [];
+      cleanup.push(function () { video.removeAttribute("src"); video.load(); URL.revokeObjectURL(url); });
+      function finish() { cleanup.forEach(function (f) { try { f(); } catch (e) {} }); }
+
+      video.playsInline = true;
+      video.muted = false;
+      video.preload = "auto";
+      var ready = once(video, "loadedmetadata", "error", 20000);
+      video.src = url;
+      video.load();
+
+      return ready.then(function () {
+        var vw = video.videoWidth, vh = video.videoHeight;
+        if (!vw || !vh) throw new Error("decode");
+        var p = planLayout(vw, vh, mode);
+        var canvas = makeCanvas(TARGET.w, TARGET.h), cx = ctx2d(canvas);
+        var tmp = null;
+        cleanup.push(function () { free(canvas); if (tmp) { free(tmp.a); free(tmp.b); } });
+
+        function draw() {
+          if (video.readyState < 2) return;
+          cx.fillStyle = "#000"; cx.fillRect(0, 0, TARGET.w, TARGET.h);
+          if (mode === "fit") tmp = drawBlurBackground(cx, video, vw, vh, tmp);
+          cx.drawImage(video, p.sx, p.sy, p.sw, p.sh, p.dx, p.dy, p.dw, p.dh);
+        }
+        cx.fillStyle = "#000"; cx.fillRect(0, 0, TARGET.w, TARGET.h);
+
+        var tracks = canvas.captureStream(FPS).getVideoTracks();
+        if (actx) {
+          var src = elementSource(video, actx);
+          var dest = actx.createMediaStreamDestination();
+          src.connect(dest);
+          cleanup.push(function () { src.disconnect(dest); });
+          tracks = tracks.concat(dest.stream.getAudioTracks());
+        }
+        var stream = new MediaStream(tracks);
+        cleanup.push(function () { stream.getTracks().forEach(function (t) { t.stop(); }); });
+
+        var mime = pickMime();
+        var opts = { videoBitsPerSecond: VIDEO_BPS, audioBitsPerSecond: 192000 };
+        if (mime) opts.mimeType = mime;
+        var rec = new MediaRecorder(stream, opts);
+        var chunks = [];
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+
+        return new Promise(function (resolve, reject) {
+          var finished = false, started = false, lastT = -1, lastMove = Date.now();
+          var watchdog = setInterval(function () {
+            if (document.hidden || video.currentTime !== lastT) { lastT = video.currentTime; lastMove = Date.now(); }
+            else if (Date.now() - lastMove > 15000) fail(new Error("stalled"));
+          }, 1000);
+          cleanup.push(function () { clearInterval(watchdog); });
+
+          // إذا طلع من الصفحة نوقف التسجيل، وإذا رجع نكمّل من نفس المكان
+          function onVis() {
+            if (finished || !started) return;
+            if (document.hidden) {
+              video.pause();
+              try { if (rec.state === "recording") rec.pause(); } catch (e) {}
+            } else {
+              try { if (actx && actx.state !== "running") actx.resume(); } catch (e) {}
+              try { if (rec.state === "paused") rec.resume(); } catch (e) {}
+              var rp = video.play(); if (rp && rp.catch) rp.catch(function () {});
+            }
+          }
+          document.addEventListener("visibilitychange", onVis);
+          cleanup.push(function () { document.removeEventListener("visibilitychange", onVis); });
+
+          function fail(err) {
+            if (finished) return;
+            finished = true;
+            try { if (rec.state !== "inactive") rec.stop(); } catch (e) {}
+            video.pause();
+            reject(err);
+          }
+
+          var useVFC = typeof video.requestVideoFrameCallback === "function";
+          function loop() {
+            if (finished) return;
+            draw();
+            if (!started && video.readyState >= 2) { started = true; rec.start(); }
+            var d = video.duration;
+            if (isFinite(d) && d > 0) onProgress(Math.min(0.99, video.currentTime / d));
+            if (useVFC) video.requestVideoFrameCallback(loop); else requestAnimationFrame(loop);
+          }
+
+          video.onended = function () {
+            if (finished) return;
+            finished = true;
+            draw();
+            if (!started) return reject(new Error("decode"));
+            rec.onstop = function () {
+              onProgress(1);
+              resolve(new Blob(chunks, { type: (rec.mimeType || mime || "video/mp4").split(";")[0] }));
+            };
+            setTimeout(function () { try { rec.stop(); } catch (e) { reject(e); } }, 120);
+          };
+          video.onerror = function () { fail(new Error("decode")); };
+
+          var pr = video.play();
+          if (pr && pr.catch) pr.catch(function (e) {
+            fail(e && e.name === "NotAllowedError" ? new Error("needs-tap") : e);
+          });
+          if (useVFC) video.requestVideoFrameCallback(loop); else requestAnimationFrame(loop);
+        });
+      }).then(function (blob) {
+        video.onended = video.onerror = null;
+        finish();
+        return blob;
+      }, function (err) {
+        video.onended = video.onerror = null;
+        finish();
+        throw err;
+      });
+    }
+
+    // مشاركة: قائمة المشاركة في الآيفون، أو تنزيل إذا الجهاز ما يدعمها
+    function shareFiles(files) {
+      var canShare = typeof navigator.share === "function" &&
+        (typeof navigator.canShare !== "function" || navigator.canShare({ files: files }));
+      if (canShare) {
+        return navigator.share({ files: files }).then(function () { return "shared"; }, function (e) {
+          if (e && e.name === "AbortError") return "cancelled";
+          return downloadFiles(files);
+        });
+      }
+      return Promise.resolve(downloadFiles(files));
+    }
+    function downloadFiles(files) {
+      files.forEach(function (f, i) {
+        setTimeout(function () {
+          var a = document.createElement("a");
+          var u = URL.createObjectURL(f);
+          a.href = u; a.download = f.name;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+        }, i * 300);
+      });
+      return "downloaded";
+    }
+
+    window.SnapHD = {
+      TARGET: TARGET, autoMode: autoMode, planLayout: planLayout, firstStepSize: firstStepSize,
+      processImage: processImage, pickMime: pickMime, needsSplitNote: needsSplitNote,
+      processVideo: processVideo, unlock: unlock, shareFiles: shareFiles
+    };
+
+    // ======================= الواجهة =======================
+    var $ = function (id) { return document.getElementById(id); };
+    var listEl = $("list"), emptyEl = $("empty"), dock = $("dock"), mainBtn = $("mainBtn"), picker = $("picker");
+    var engine = $("engine");
+    var items = [];
+    var seq = 0, outCount = 0;
+    var queue = Promise.resolve();
+    var audioCtx = null;
+
+    function getAudioCtx() {
+      if (audioCtx) return audioCtx;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) { try { audioCtx = new AC(); } catch (e) {} }
+      return audioCtx;
+    }
+
+    var ICON = {
+      photo: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/></svg>',
+      video: '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>',
+      x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+      send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>',
+      warn: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+      bolt: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>'
+    };
+
+    function fmtSize(b) {
+      return b >= 1048576 ? (b / 1048576).toFixed(1) + " م.ب" : Math.max(1, Math.round(b / 1024)) + " ك.ب";
+    }
+    function fmtDur(s) {
+      if (!isFinite(s)) return "";
+      s = Math.round(s);
+      return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+
+    var toastT;
+    function toast(msg) {
+      var t = $("toast");
+      t.textContent = msg; t.classList.add("show");
+      clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("show"); }, 2600);
+    }
+
+    function probe(item) {
+      return new Promise(function (resolve) {
+        var url = item.srcUrl;
+        if (item.kind === "image") {
+          var im = new Image();
+          im.onload = function () { item.srcW = im.naturalWidth; item.srcH = im.naturalHeight; resolve(true); };
+          im.onerror = function () { resolve(false); };
+          im.src = url;
+        } else {
+          var v = document.createElement("video");
+          v.muted = true; v.playsInline = true; v.preload = "metadata";
+          v.onloadedmetadata = function () { item.srcW = v.videoWidth; item.srcH = v.videoHeight; item.dur = v.duration; v.removeAttribute("src"); v.load(); resolve(!!item.srcW); };
+          v.onerror = function () { resolve(false); };
+          v.src = url;
+        }
+      });
+    }
+
+    function addFiles(fileList) {
+      var files = Array.prototype.slice.call(fileList || []);
+      files.forEach(function (file) {
+        var isVideo = /^video\//.test(file.type) || /\.(mov|mp4|m4v|webm|3gp)$/i.test(file.name);
+        var item = {
+          id: ++seq, file: file, kind: isVideo ? "video" : "image", mode: null,
+          state: "probe", srcUrl: URL.createObjectURL(file), out: null, outUrl: null, progress: 0, err: ""
+        };
+        items.push(item);
+        renderItem(item);
+        enqueue(function () {
+          return probe(item).then(function (ok) {
+            if (!ok) { setState(item, "error", "ما قدرت أفتح هالملف"); return; }
+            item.mode = autoMode(item.srcW, item.srcH);
+            if (item.kind === "image") return runImage(item);
+            setState(item, "pending");
+          });
+        });
+      });
+      refresh();
+    }
+
+    function enqueue(fn) {
+      queue = queue.then(fn).catch(function (e) { console.error(e); });
+      return queue;
+    }
+
+    function runImage(item) {
+      setState(item, "busy");
+      return processImage(item.file, item.mode).then(function (blob) {
+        setOutput(item, blob, "jpg");
+      }, function () {
+        setState(item, "error", "ما قدرت أفتح هالملف");
+      });
+    }
+
+    function runVideo(item) {
+      setState(item, "busy");
+      item.progress = 0;
+      return processVideo(item.file, item.mode, function (p) {
+        item.progress = p; updateProgress(item);
+      }, engine, getAudioCtx()).then(function (blob) {
+        setOutput(item, blob, /webm/.test(blob.type) ? "webm" : "mp4");
+      }, function (e) {
+        if (e && e.message === "needs-tap") setState(item, "pending", "اضغط «جهّز الفيديوهات» مرة ثانية");
+        else setState(item, "error", "ما قدرت أحوّل هالفيديو");
+      });
+    }
+
+    function setOutput(item, blob, ext) {
+      if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+      item.out = new File([blob], "SnapHD_" + (++outCount) + "." + ext, { type: blob.type });
+      item.outUrl = URL.createObjectURL(item.out);
+      setState(item, "ready");
+    }
+
+    function setState(item, state, err) {
+      item.state = state;
+      item.err = err || "";
+      renderItem(item);
+      refresh();
+    }
+
+    function setMode(item, mode) {
+      if (item.mode === mode || item.state === "busy" || item.state === "probe") return;
+      item.mode = mode;
+      if (item.kind === "image") { setState(item, "busy"); enqueue(function () { return runImage(item); }); }
+      else setState(item, "pending");
+    }
+
+    function removeItem(item) {
+      if (item.state === "busy") return;
+      items = items.filter(function (i) { return i !== item; });
+      URL.revokeObjectURL(item.srcUrl);
+      if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+      var el = listEl.querySelector('[data-id="' + item.id + '"]');
+      if (el) el.remove();
+      refresh();
+    }
+
+    function renderItem(item) {
+      var el = listEl.querySelector('[data-id="' + item.id + '"]');
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "card item";
+        el.dataset.id = item.id;
+        listEl.appendChild(el);
+      }
+      var busy = item.state === "busy" || item.state === "probe";
+      el.classList.toggle("busy", busy);
+      el.dataset.state = item.state;
+
+      var media;
+      var showUrl = item.state === "ready" ? item.outUrl : item.srcUrl;
+      if (item.state === "error") media = '<div class="thumb-err">' + ICON.warn + "</div>";
+      else if (item.kind === "image") media = '<img alt="" src="' + showUrl + '">';
+      else media = '<video muted playsinline preload="metadata" src="' + showUrl + '#t=0.1"></video>';
+
+      var meta = "";
+      if (item.srcW) {
+        meta = '<bdi>' + item.srcW + "×" + item.srcH + "</bdi>";
+        if (item.kind === "video" && isFinite(item.dur)) meta += ' · <bdi>' + fmtDur(item.dur) + "</bdi>";
+      } else if (item.state === "error") meta = item.file.name;
+      if (item.state === "ready") meta += ' ← <bdi>1080×1920</bdi>';
+
+      var status = "";
+      if (item.state === "probe") status = '<div class="status"><span class="spin"></span>يفتح الملف…</div>';
+      else if (item.state === "busy" && item.kind === "image") status = '<div class="status"><span class="spin"></span>جاري التجهيز…</div>';
+      else if (item.state === "busy") status = '<div class="status"><span class="spin"></span><span class="pct">جاري التحويل… 0٪</span></div><div class="bar"><i></i></div>';
+      else if (item.state === "pending") status = '<div class="status wait">' + (item.err || "جاهز للتحويل، اضغط «جهّز الفيديوهات» تحت") + "</div>";
+      else if (item.state === "ready") status = '<div class="status ok">' + ICON.check + "جاهز · " + fmtSize(item.out.size) + "</div>";
+      else if (item.state === "error") status = '<div class="status err">' + item.err + "</div>";
+
+      var note = item.kind === "video" && needsSplitNote(item.dur) && item.state !== "error"
+        ? '<div class="note">المقطع أطول من دقيقة، والسناب بيقسّمه لأكثر من سناب.</div>' : "";
+
+      var seg = item.state === "error" ? "" :
+        '<div class="seg">' +
+          '<button data-mode="fill" class="' + (item.mode === "fill" ? "on" : "") + '">ملء الشاشة</button>' +
+          '<button data-mode="fit" class="' + (item.mode === "fit" ? "on" : "") + '">كامل بدون قص</button>' +
+        "</div>";
+
+      var send = item.state === "ready"
+        ? '<button class="btn btn-primary send" data-act="send">' + ICON.send + "أرسل للسناب</button>" : "";
+
+      el.innerHTML =
+        '<div class="thumb">' + media + '<span class="kind">' + (item.kind === "image" ? ICON.photo : ICON.video) + "</span></div>" +
+        '<div class="item-body">' +
+          '<div class="item-top"><div><div class="item-title">' + (item.kind === "image" ? "صورة" : "فيديو") + " " + item.id + '</div><div class="item-meta">' + meta + "</div></div>" +
+          (busy ? "" : '<button class="x-btn" data-act="remove" aria-label="حذف">' + ICON.x + "</button>") + "</div>" +
+          seg + status + note + send +
+        "</div>";
+      if (item.state === "busy") updateProgress(item);
+    }
+
+    function updateProgress(item) {
+      var el = listEl.querySelector('[data-id="' + item.id + '"]');
+      if (!el) return;
+      var pct = Math.round(item.progress * 100);
+      var t = el.querySelector(".pct"), b = el.querySelector(".bar i");
+      if (t) t.textContent = "جاري التحويل… " + pct + "٪";
+      if (b) b.style.width = pct + "%";
+    }
+
+    listEl.addEventListener("click", function (e) {
+      var card = e.target.closest(".item");
+      if (!card) return;
+      var item = items.find(function (i) { return String(i.id) === card.dataset.id; });
+      if (!item) return;
+      var modeBtn = e.target.closest("[data-mode]");
+      if (modeBtn) return setMode(item, modeBtn.dataset.mode);
+      var act = e.target.closest("[data-act]");
+      if (!act) return;
+      if (act.dataset.act === "remove") removeItem(item);
+      if (act.dataset.act === "send") doShare([item.out]);
+    });
+
+    function doShare(files) {
+      shareFiles(files).then(function (r) {
+        if (r === "downloaded") toast("انحفظ الملف في التنزيلات");
+      });
+    }
+
+    function refresh() {
+      var has = items.length > 0;
+      emptyEl.hidden = has;
+      dock.hidden = !has;
+      var pending = items.filter(function (i) { return i.kind === "video" && i.state === "pending"; });
+      var ready = items.filter(function (i) { return i.state === "ready"; });
+      var working = items.some(function (i) { return i.state === "busy" || i.state === "probe"; });
+      if (pending.length && !working) {
+        mainBtn.dataset.act = "convert";
+        mainBtn.innerHTML = ICON.bolt + "جهّز الفيديوهات (" + pending.length + ")";
+        mainBtn.disabled = false;
+      } else {
+        mainBtn.dataset.act = "sendAll";
+        mainBtn.innerHTML = working ? '<span class="spin"></span>جاري التجهيز…' : ICON.send + (ready.length > 1 ? "أرسل الكل (" + ready.length + ")" : "أرسل للسناب");
+        mainBtn.disabled = working || !ready.length;
+      }
+    }
+
+    mainBtn.addEventListener("click", function () {
+      if (mainBtn.dataset.act === "convert") {
+        var pending = items.filter(function (i) { return i.kind === "video" && i.state === "pending"; });
+        if (!pending.length) return;
+        // لازم يصير داخل الضغطة نفسها عشان الآيفون يسمح بالصوت
+        if (!engine.getAttribute("src")) engine.src = pending[0].srcUrl;
+        unlock(engine, getAudioCtx());
+        pending.forEach(function (it) {
+          it.state = "busy"; renderItem(it);
+          enqueue(function () { return runVideo(it); });
+        });
+        refresh();
+        return;
+      }
+      var files = items.filter(function (i) { return i.state === "ready"; }).map(function (i) { return i.out; });
+      if (files.length) doShare(files);
+    });
+
+    picker.addEventListener("click", function () { getAudioCtx(); });
+    picker.addEventListener("change", function () {
+      addFiles(picker.files);
+      picker.value = "";
+    });
+  })();
+  </script>
+</body>
+</html>
