@@ -1943,20 +1943,47 @@ Script.complete();</script>
     // خلل iOS: في وضع "إضافة للشاشة الرئيسية" مع شريط الحالة الشفاف، الآيفون أحياناً
     // يحسب الشاشة أقصر بمقدار ارتفاع شريط الحالة، فيطلع فراغ تحت الشريط السفلي.
     function fixViewportGap() {
+      // لا نقيس والكيبورد مفتوح (الآيفون يغيّر المقاسات مؤقتاً)
+      const a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+
       let gap = 0;
       const portrait = window.matchMedia("(orientation: portrait)").matches;
       if (window.navigator.standalone && portrait) {
-        gap = Math.round(screen.height - window.innerHeight);
+        // نقيس المساحة الفعلية اللي تتمدد فيها العناصر الثابتة، مو innerHeight
+        const h = vpProbe.getBoundingClientRect().height;
+        gap = Math.round(screen.height - h);
         if (gap < 0 || gap > 120) gap = 0;
       }
-      document.documentElement.style.setProperty("--vp-gap", gap + "px");
+      if (gap !== lastGap) {
+        lastGap = gap;
+        document.documentElement.style.setProperty("--vp-gap", gap + "px");
+      }
     }
-    window.addEventListener("resize", fixViewportGap);
-    window.addEventListener("orientationchange", () => setTimeout(fixViewportGap, 300));
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(fixViewportGap, 100); });
+
+    // عنصر مخفي بطول الشاشة: إذا تغيّر طوله لأي سبب، نعيد الحساب تلقائياً
+    const vpProbe = document.createElement("div");
+    vpProbe.style.cssText = "position:fixed;top:0;bottom:0;left:0;width:0;visibility:hidden;pointer-events:none;";
+    document.body.appendChild(vpProbe);
+    let lastGap = -1;
+
+    let gapTimer = null;
+    function scheduleGapFix(delay = 0) {
+      clearTimeout(gapTimer);
+      gapTimer = setTimeout(() => requestAnimationFrame(fixViewportGap), delay);
+    }
+    // بعد الفتح أو الرجوع للتطبيق الآيفون أحياناً يعدّل المقاس متأخر، فنعيد الفحص كم مرة
+    function recheckGapSoon() { [0, 300, 1000, 2500].forEach(t => setTimeout(fixViewportGap, t)); }
+
+    if ("ResizeObserver" in window) new ResizeObserver(() => scheduleGapFix()).observe(vpProbe);
+    window.addEventListener("resize", () => scheduleGapFix(50));
+    window.addEventListener("orientationchange", () => scheduleGapFix(400));
+    window.addEventListener("pageshow", recheckGapSoon);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) recheckGapSoon(); });
+    document.addEventListener("focusout", () => scheduleGapFix(500));
 
     // Init
-    fixViewportGap();
+    recheckGapSoon();
     document.documentElement.classList.add("cal-lock");
     applyTheme();
     renderHeader();
