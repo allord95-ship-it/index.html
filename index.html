@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="هلالي" />
+  <meta name="theme-color" content="#0B1220" />
+  <title>هلالي</title>
+  <style>
+    :root {
+      --bg: #0B1220;
+      --bg2: #111A2E;
+      --card: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --text: #F8FAFC;
+      --sub: #94A3B8;
+      --accent: #34D399;
+      --accent-soft: rgba(52, 211, 153, 0.16);
+      --amber: #F59E0B;
+      --amber-soft: rgba(245, 158, 11, 0.16);
+      --blue: #38BDF8;
+      --danger: #F87171;
+      --danger-soft: rgba(248, 113, 113, 0.14);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Arabic", "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at top right, #13253A 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 14px 16px 24px;
+    }
+
+    /* Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #10B981, #059669);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn, .pill-btn {
+      border: 1px solid var(--card-border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .icon-btn { padding: 8px 10px; font-size: 16px; }
+    .pill-btn.accent { background: var(--accent-soft); border-color: rgba(52, 211, 153, 0.35); color: var(--accent); }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Segmented */
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(255,255,255,0.04);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+    }
+
+    .segmented.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    .segmented button {
+      border: none;
+      background: transparent;
+      color: var(--sub);
+      padding: 9px 10px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .segmented button.active {
+      background: var(--accent);
+      color: #06281E;
+    }
+
+    /* Calendar */
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .cal-month-title {
+      text-align: center;
+    }
+
+    .cal-month-title strong { display: block; font-size: 16px; }
+    .cal-month-title span { font-size: 12px; color: var(--sub); }
+
+    .weekdays, .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .weekdays div {
+      font-size: 11px;
+      color: var(--sub);
+      padding-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .day-cell {
+      aspect-ratio: 1 / 1.05;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .day-cell.empty { background: transparent; cursor: default; }
+    .day-cell.today { background: var(--accent); color: #05251B; font-weight: 800; }
+    .day-cell.today .sub-d { color: #05251B; opacity: 0.85; }
+    .day-cell.selected { border-color: var(--accent); background: var(--accent-soft); }
+    .day-cell .main-d { font-size: 15px; font-weight: 700; line-height: 1.1; }
+    .day-cell .sub-d { font-size: 10px; color: var(--sub); margin-top: 2px; }
+    .day-cell .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--amber);
+      position: absolute; bottom: 4px;
+    }
+    .day-cell.today .dot { background: #05251B; }
+
+    /* Countdown */
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cd-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .cd-box strong { display: block; font-size: 20px; color: var(--accent); }
+    .cd-box span { font-size: 11px; color: var(--sub); }
+
+    /* Events List */
+    .event-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 13px;
+      margin-bottom: 10px;
+    }
+
+    .event-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .event-title { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+    .event-meta { font-size: 12px; color: var(--sub); line-height: 1.5; }
+    .event-note { font-size: 12px; color: #CBD5E1; margin-top: 6px; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.green { background: var(--accent-soft); color: var(--accent); }
+    .badge.amber { background: var(--amber-soft); color: var(--amber); }
+    .badge.gray { background: rgba(255,255,255,0.08); color: var(--sub); }
+
+    .event-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn.full { width: 100%; }
+    .btn.primary { background: var(--accent); color: #05251B; }
+    .btn.secondary { background: rgba(255,255,255,0.08); color: var(--text); }
+    .btn.danger { background: var(--danger-soft); color: var(--danger); }
+    .btn.sm { padding: 7px 11px; font-size: 12px; flex: 1; }
+
+    /* Widget Preview */
+    .widget-mock {
+      background: linear-gradient(135deg, #0F172A, #162032);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .wm-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .wm-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .wm-row:last-child { margin-bottom: 0; }
+
+    /* Inputs */
+    label.field-label {
+      display: block;
+      font-size: 12px;
+      color: var(--sub);
+      margin: 10px 0 5px;
+      font-weight: 600;
+    }
+
+    input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    select option { background: #0F172A; color: #fff; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 8px; }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(11, 18, 32, 0.92);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--card-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      z-index: 40;
+    }
+
+    .nav-item {
+      border: none;
+      background: transparent;
+      color: var(--sub);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 4px;
+    }
+
+    .nav-item .ico { font-size: 19px; }
+    .nav-item.active { color: var(--accent); }
+
+    /* Tabs */
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 60;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: 100%;
+      max-width: 540px;
+      background: #111A2E;
+      border: 1px solid var(--card-border);
+      border-radius: 22px 22px 0 0;
+      padding: 18px 16px calc(20px + env(safe-area-inset-bottom));
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .toast {
+      position: fixed;
+      top: calc(14px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #10B981;
+      color: #05251B;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      z-index: 100;
+      transition: transform 0.25s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .code-preview {
+      background: #070C16;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: #A7F3D0;
+      max-height: 140px;
+      overflow: auto;
+      direction: ltr;
+      text-align: left;
+      white-space: pre;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="container">
+    <!-- Top Header -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">🌙</div>
+        <div>
+          <h1>هلالي</h1>
+          <p id="header-date">...</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="pill-btn accent" onclick="syncToWidget()">مزامنة</button>
+        <button class="pill-btn" onclick="goToday()">اليوم</button>
+        <button class="icon-btn" onclick="openSettings()" title="الإعدادات">⚙️</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: CALENDAR -->
+    <section id="tab-calendar" class="tab-page active">
+      <div class="segmented">
+        <button id="mode-hijri" class="active" onclick="setCalMode('hijri')">هجري (أم القرى)</button>
+        <button id="mode-greg" onclick="setCalMode('greg')">ميلادي</button>
+      </div>
+
+      <div class="card" id="today-summary"></div>
+
+      <div class="card">
+        <div class="cal-header">
+          <button class="icon-btn" onclick="shiftMonth(-1)">‹</button>
+          <div class="cal-month-title">
+            <strong id="cal-title">...</strong>
+            <span id="cal-subtitle">...</span>
+          </div>
+          <button class="icon-btn" onclick="shiftMonth(1)">›</button>
+        </div>
+        <div class="weekdays">
+          <div>أحد</div><div>إثنين</div><div>ثلاثاء</div><div>أربعاء</div><div>خميس</div><div>جمعة</div><div>سبت</div>
+        </div>
+        <div class="days-grid" id="days-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <span id="selected-day-label">اليوم</span>
+          <button class="pill-btn accent" onclick="openEventModal(null, selectedDateYMD)">+ إضافة موعد</button>
+        </div>
+        <div id="selected-day-events"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: EVENTS -->
+    <section id="tab-events" class="tab-page">
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn primary" style="flex:1" onclick="openEventModal()">+ موعد جديد</button>
+        <button class="btn secondary" onclick="syncToWidget()">🔄 تحديث الويدجت</button>
+      </div>
+
+      <div class="card" id="countdown-card"></div>
+
+      <div class="segmented three">
+        <button id="filter-all" class="active" onclick="setEventFilter('all')">الكل</button>
+        <button id="filter-mine" onclick="setEventFilter('mine')">مواعيدي</button>
+        <button id="filter-public" onclick="setEventFilter('public')">مناسبات عامة</button>
+      </div>
+
+      <div id="events-list"></div>
+    </section>
+
+    <!-- TAB 3: WIDGET -->
+    <section id="tab-widget" class="tab-page">
+      <div class="card">
+        <div class="section-title">
+          <span>ربط مباشر مع ويدجت الآيفون</span>
+          <span class="badge green">بدون التقويم</span>
+        </div>
+        <p style="margin:0 0 12px; font-size:13px; color:var(--sub); line-height:1.6;">
+          يتم إرسال مواعيدك مباشرة إلى تطبيق <strong>Scriptable</strong> وتحديث الويدجت تلقائياً بمجرد الضغط على الزر أدناه أو عند إضافة موعد جديد.
+        </p>
+
+        <button class="btn primary full" onclick="syncToWidget()">🔄 مزامنة مواعيدي مع الويدجت الآن</button>
+
+        <label class="field-label">اسم السكربت في Scriptable</label>
+        <input type="text" id="widget-script-name" value="Hilali" onchange="saveScriptName(this.value)" placeholder="Hilali" />
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span>معاينة حيّة للويدجت (4×2)</span></div>
+        <div class="widget-mock" id="widget-preview"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><span>كود Scriptable (احتياطي)</span></div>
+        <div class="code-preview" id="scriptable-code-view"></div>
+        <button class="btn secondary full" onclick="copyScriptableCode()">📋 نسخ كود Scriptable</button>
+      </div>
+    </section>
+
+    <!-- TAB 4: CONVERTER -->
+    <section id="tab-converter" class="tab-page">
+      <div class="card">
+        <div class="section-title"><span>محوّل التاريخ (أم القرى ↔ ميلادي)</span></div>
+        <div class="segmented">
+          <button id="conv-h2g" class="active" onclick="setConvDir('h2g')">من هجري إلى ميلادي</button>
+          <button id="conv-g2h" onclick="setConvDir('g2h')">من ميلادي إلى هجري</button>
+        </div>
+
+        <div id="conv-h2g-inputs">
+          <div class="row-3">
+            <div>
+              <label class="field-label">اليوم</label>
+              <input type="number" id="ch-day" min="1" max="30" oninput="runConvert()" />
+            </div>
+            <div>
+              <label class="field-label">الشهر</label>
+              <select id="ch-month" onchange="runConvert()"></select>
+            </div>
+            <div>
+              <label class="field-label">السنة</label>
+              <input type="number" id="ch-year" min="1350" max="1550" oninput="runConvert()" />
+            </div>
+          </div>
+        </div>
+
+        <div id="conv-g2h-inputs" style="display:none;">
+          <label class="field-label">اختر التاريخ الميلادي</label>
+          <input type="date" id="cg-date" onchange="runConvert()" />
+        </div>
+
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:12px;">
+          <button class="pill-btn" onclick="quickConvert(0)">اليوم</button>
+          <button class="pill-btn" onclick="quickConvert(30)">بعد 30 يوم</button>
+          <button class="pill-btn" onclick="quickConvert(90)">بعد 90 يوم</button>
+          <button class="pill-btn" onclick="quickConvert(365)">بعد سنة</button>
+        </div>
+      </div>
+
+      <div class="card" id="conv-result" style="text-align:center;"></div>
+    </section>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="calendar" onclick="switchTab('calendar')"><span class="ico">📅</span><span>التقويم</span></button>
+    <button class="nav-item" data-tab="events" onclick="switchTab('events')"><span class="ico">🗓️</span><span>مواعيدي</span></button>
+    <button class="nav-item" data-tab="widget" onclick="switchTab('widget')"><span class="ico">📱</span><span>الويدجت</span></button>
+    <button class="nav-item" data-tab="converter" onclick="switchTab('converter')"><span class="ico">🔄</span><span>المحول</span></button>
+  </nav>
+
+  <!-- Add/Edit Event Modal -->
+  <div class="modal-backdrop" id="event-modal">
+    <div class="modal">
+      <div class="section-title">
+        <span id="modal-title">موعد جديد</span>
+        <button class="icon-btn" onclick="closeEventModal()">✕</button>
+      </div>
+      <input type="hidden" id="ev-id" />
+
+      <label class="field-label">عنوان الموعد</label>
+      <input type="text" id="ev-title" placeholder="مثال: موعد مراجعة العيادة" />
+
+      <div class="row-2">
+        <div>
+          <label class="field-label">التاريخ (ميلادي)</label>
+          <input type="date" id="ev-date" onchange="updateModalHijriPreview()" />
+        </div>
+        <div>
+          <label class="field-label">الوقت (اختياري)</label>
+          <input type="time" id="ev-time" />
+        </div>
+      </div>
+      <div id="ev-hijri-preview" style="font-size:12px; color:var(--accent); margin-top:6px;"></div>
+
+      <label class="field-label">التصنيف</label>
+      <select id="ev-cat">
+        <option value="شخصي">شخصي</option>
+        <option value="عمل">عمل</option>
+        <option value="سفر">سفر</option>
+        <option value="عام">عام</option>
+      </select>
+
+      <label class="field-label">ملاحظات (اختياري)</label>
+      <textarea id="ev-note" rows="2" placeholder="تفاصيل إضافية..."></textarea>
+
+      <div class="toggle-row">
+        <span style="font-size:13px;">مزامنة الويدجت تلقائياً بعد الحفظ</span>
+        <input type="checkbox" id="ev-autosync" style="width:20px; height:20px; accent-color:#34D399;" />
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn primary" style="flex:1" onclick="saveEvent()">حفظ الموعد</button>
+        <button class="btn secondary" onclick="closeEventModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settings-modal">
+    <div class="modal">
+      <div class="section-title">
+        <span>الإعدادات</span>
+        <button class="icon-btn" onclick="closeSettings()">✕</button>
+      </div>
+
+      <label class="field-label">تعديل التاريخ الهجري (بالأيام)</label>
+      <select id="set-offset" onchange="saveSettings()">
+        <option value="-2">-2 يوم</option>
+        <option value="-1">-1 يوم</option>
+        <option value="0">0 (تلقائي أم القرى)</option>
+        <option value="1">+1 يوم</option>
+        <option value="2">+2 يوم</option>
+      </select>
+
+      <label class="field-label">اسم السكربت في Scriptable</label>
+      <input type="text" id="set-script" onchange="saveSettings()" placeholder="Hilali" />
+
+      <div class="toggle-row">
+        <span style="font-size:13px;">تفعيل المزامنة التلقائية عند حفظ موعد</span>
+        <input type="checkbox" id="set-autosync" onchange="saveSettings()" style="width:20px; height:20px; accent-color:#34D399;" />
+      </div>
+
+      <button class="btn primary full" style="margin-top:12px;" onclick="closeSettings()">تم</button>
+    </div>
+  </div>
+
+  <!-- Scriptable Template -->
+  <script type="text/plain" id="scriptable-template">const fm = FileManager.local();
+const filePath = fm.joinPath(fm.documentsDirectory(), "hilali_events.json");
+
+function loadEvents() {
+  if (fm.fileExists(filePath)) {
+    try { return JSON.parse(fm.readString(filePath)); } catch (e) {}
+  }
+  return [];
+}
+
+function saveEvents(list) {
+  fm.writeString(filePath, JSON.stringify(list));
+}
+
+let events = loadEvents();
+
+if (args.queryParameters && args.queryParameters.events) {
+  try {
+    const incoming = JSON.parse(args.queryParameters.events);
+    if (Array.isArray(incoming)) {
+      events = incoming;
+      saveEvents(events);
+    }
+  } catch (e) {}
+}
+
+if (!config.runsInWidget && !(args.queryParameters && args.queryParameters.events)) {
+  const menu = new Alert();
+  menu.title = "مواعيد هلالي";
+  menu.addAction("إضافة موعد جديد");
+  menu.addAction("حذف موعد");
+  menu.addAction("معاينة الويدجت");
+  menu.addCancelAction("إغلاق");
+  const choice = await menu.presentSheet();
+
+  if (choice === 0) {
+    const add = new Alert();
+    add.title = "موعد جديد";
+    add.addTextField("اسم الموعد", "");
+    add.addTextField("التاريخ (YYYY-MM-DD)", new Date().toISOString().slice(0, 10));
+    add.addAction("حفظ");
+    add.addCancelAction("إلغاء");
+    if (await add.presentAlert() === 0) {
+      const title = add.textFieldValue(0).trim();
+      const date = add.textFieldValue(1).trim();
+      if (title && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        events.push({ title, date });
+        saveEvents(events);
+      }
+    }
+  } else if (choice === 1 && events.length > 0) {
+    const del = new Alert();
+    del.title = "اختر الموعد لحذفه";
+    events.forEach(ev => del.addDestructiveAction(`${ev.title} (${ev.date})`));
+    del.addCancelAction("إلغاء");
+    const idx = await del.presentSheet();
+    if (idx !== -1) {
+      events.splice(idx, 1);
+      saveEvents(events);
+    }
+  }
+}
+
+const widget = new ListWidget();
+widget.setPadding(14, 16, 14, 16);
+const grad = new LinearGradient();
+grad.locations = [0, 1];
+grad.colors = [new Color("#0F172A"), new Color("#162032")];
+widget.backgroundGradient = grad;
+
+const now = new Date();
+const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+const hijriFull = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
+  weekday: "long", day: "numeric", month: "long", year: "numeric"
+}).format(now);
+
+const gregShort = new Intl.DateTimeFormat("ar-SA", {
+  day: "numeric", month: "short"
+}).format(now);
+
+const header = widget.addStack();
+header.layoutHorizontally();
+header.centerAlignContent();
+
+const gText = header.addText(gregShort);
+gText.font = Font.mediumSystemFont(12);
+gText.textColor = new Color("#94A3B8");
+header.addSpacer();
+
+const hText = header.addText(hijriFull);
+hText.font = Font.boldSystemFont(14);
+hText.textColor = new Color("#34D399");
+hText.rightAlignText();
+
+widget.addSpacer(8);
+const divider = widget.addStack();
+divider.backgroundColor = new Color("#FFFFFF", 0.08);
+divider.size = new Size(0, 1);
+widget.addSpacer(8);
+
+function getDaysInfo(dateStr) {
+  const target = new Date(dateStr + "T00:00:00");
+  const diff = Math.round((target - startOfToday) / (1000 * 60 * 60 * 24));
+  if (isNaN(diff) || diff < 0) return null;
+  let text = diff === 0 ? "اليوم" : diff === 1 ? "غداً" : diff === 2 ? "بعد يومين" : diff <= 10 ? `باقي ${diff} أيام` : `باقي ${diff} يوم`;
+  return { diff, text };
+}
+
+const upcoming = events
+  .map(ev => ({ ...ev, info: getDaysInfo(ev.date) }))
+  .filter(ev => ev.info !== null)
+  .sort((a, b) => a.info.diff - b.info.diff)
+  .slice(0, config.widgetFamily === "large" ? 6 : 3);
+
+if (upcoming.length === 0) {
+  widget.addSpacer();
+  const emptyStack = widget.addStack();
+  emptyStack.layoutHorizontally();
+  emptyStack.addSpacer();
+  const emptyText = emptyStack.addText("لا توجد مواعيد قادمة");
+  emptyText.font = Font.systemFont(13);
+  emptyText.textColor = new Color("#64748B");
+  widget.addSpacer();
+} else {
+  const palette = ["#34D399", "#F59E0B", "#38BDF8", "#A78BFA"];
+  for (let i = 0; i < upcoming.length; i++) {
+    const ev = upcoming[i];
+    const color = palette[i % palette.length];
+    const row = widget.addStack();
+    row.layoutHorizontally();
+    row.centerAlignContent();
+    row.backgroundColor = new Color("#FFFFFF", 0.05);
+    row.cornerRadius = 10;
+    row.setPadding(7, 10, 7, 12);
+
+    const badgeBox = row.addStack();
+    badgeBox.backgroundColor = new Color(color, 0.18);
+    badgeBox.cornerRadius = 6;
+    badgeBox.setPadding(3, 8, 3, 8);
+    const badgeTxt = badgeBox.addText(ev.info.text);
+    badgeTxt.font = Font.boldSystemFont(11);
+    badgeTxt.textColor = new Color(color);
+
+    row.addSpacer();
+    const titleTxt = row.addText(ev.title);
+    titleTxt.font = Font.semiboldSystemFont(13);
+    titleTxt.textColor = Color.white();
+    titleTxt.rightAlignText();
+    titleTxt.lineLimit = 1;
+
+    row.addSpacer(8);
+    const dot = row.addText("●");
+    dot.font = Font.systemFont(8);
+    dot.textColor = new Color(color);
+
+    if (i < upcoming.length - 1) widget.addSpacer(6);
+  }
+}
+
+widget.addSpacer();
+Script.setWidget(widget);
+if (!config.runsInWidget) await widget.presentMedium();
+Script.complete();</script>
+
+  <script>
+    const HIJRI_MONTHS = ["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"];
+    const GREG_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+    const WEEKDAYS = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+
+    const STORAGE_EVENTS = "hilali_events_v2";
+    const STORAGE_SETTINGS = "hilali_settings_v2";
+
+    let settings = loadSettings();
+    let events = loadEvents();
+    let calMode = "hijri";
+    let eventFilter = "all";
+    let convDir = "h2g";
+    let lastConvertedYMD = toYMD(new Date());
+
+    const today = new Date();
+    const todayYMD = toYMD(today);
+    let selectedDateYMD = todayYMD;
+    let viewHijri = getHijriParts(today);
+    let viewGreg = { year: today.getFullYear(), month: today.getMonth() + 1 };
+
+    function loadSettings() {
+      try {
+        const s = JSON.parse(localStorage.getItem(STORAGE_SETTINGS) || "{}");
+        return {
+          hijriOffset: Number(s.hijriOffset || 0),
+          scriptName: s.scriptName || "Hilali",
+          autoSync: s.autoSync !== false
+        };
+      } catch {
+        return { hijriOffset: 0, scriptName: "Hilali", autoSync: true };
+      }
+    }
+
+    function loadEvents() {
+      try {
+        const list = JSON.parse(localStorage.getItem(STORAGE_EVENTS));
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function persistEvents() {
+      localStorage.setItem(STORAGE_EVENTS, JSON.stringify(events));
+    }
+
+    function toYMD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseYMD(ymd) {
+      const [y, m, d] = ymd.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function getHijriParts(dateObj) {
+      const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + settings.hijriOffset);
+      const parts = new Intl.DateTimeFormat("en-US-u-ca-islamic-umalqura", {
+        day: "numeric", month: "numeric", year: "numeric"
+      }).formatToParts(d);
+      const map = {};
+      parts.forEach(p => { if (p.type !== "literal") map[p.type] = parseInt(p.value, 10); });
+      return { year: map.year, month: map.month, day: map.day };
+    }
+
+    function hijriToGregDate(hYear, hMonth, hDay) {
+      const approxYear = Math.floor((hYear - 1) * 0.970224 + 621.5643);
+      let d = new Date(approxYear, 0, 1);
+      d.setDate(d.getDate() + Math.round((hMonth - 1) * 29.53 + hDay - 1));
+      const targetNum = hYear * 10000 + hMonth * 100 + hDay;
+
+      for (let i = 0; i < 60; i++) {
+        const cur = getHijriParts(d);
+        const curNum = cur.year * 10000 + cur.month * 100 + cur.day;
+        if (curNum === targetNum) return d;
+        const diffDays = (hYear - cur.year) * 354 + (hMonth - cur.month) * 29 + (hDay - cur.day);
+        const step = diffDays === 0 ? (targetNum > curNum ? 1 : -1) : Math.max(-25, Math.min(25, diffDays));
+        d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + step);
+      }
+      return d;
+    }
+
+    function formatHijri(d, withWeekday = false) {
+      const h = getHijriParts(d);
+      const base = `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} هـ`;
+      return withWeekday ? `${WEEKDAYS[d.getDay()]}، ${base}` : base;
+    }
+
+    function formatGreg(d) {
+      return `${d.getDate()} ${GREG_MONTHS[d.getMonth()]} ${d.getFullYear()} م`;
+    }
+
+    function daysDiffFromToday(ymd) {
+      const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const t1 = parseYMD(ymd);
+      return Math.round((t1 - t0) / 86400000);
+    }
+
+    function formatDaysBadge(diff) {
+      if (diff < 0) return { text: "انتهى", cls: "gray" };
+      if (diff === 0) return { text: "اليوم", cls: "green" };
+      if (diff === 1) return { text: "غداً", cls: "green" };
+      if (diff === 2) return { text: "بعد يومين", cls: "green" };
+      if (diff <= 10) return { text: `باقي ${diff} أيام`, cls: "green" };
+      return { text: `باقي ${diff} يوم`, cls: "amber" };
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+    }
+
+    function getPublicOccasions() {
+      const curH = getHijriParts(today);
+      const hijriFixed = [
+        { title: "بداية شهر رمضان", hm: 9, hd: 1 },
+        { title: "عيد الفطر المبارك", hm: 10, hd: 1 },
+        { title: "يوم عرفة", hm: 12, hd: 9 },
+        { title: "عيد الأضحى المبارك", hm: 12, hd: 10 },
+        { title: "رأس السنة الهجرية", hm: 1, hd: 1 },
+        { title: "يوم عاشوراء", hm: 1, hd: 10 }
+      ];
+      const list = [];
+      hijriFixed.forEach(o => {
+        let gd = hijriToGregDate(curH.year, o.hm, o.hd);
+        if (daysDiffFromToday(toYMD(gd)) < 0) gd = hijriToGregDate(curH.year + 1, o.hm, o.hd);
+        list.push({ id: "pub_" + o.title, title: o.title, date: toYMD(gd), cat: "مناسبة", isPublic: true });
+      });
+
+      const gregFixed = [
+        { title: "يوم التأسيس السعودي", m: 2, d: 22 },
+        { title: "اليوم الوطني السعودي", m: 9, d: 23 }
+      ];
+      gregFixed.forEach(o => {
+        let gd = new Date(today.getFullYear(), o.m - 1, o.d);
+        if (daysDiffFromToday(toYMD(gd)) < 0) gd = new Date(today.getFullYear() + 1, o.m - 1, o.d);
+        list.push({ id: "pub_" + o.title, title: o.title, date: toYMD(gd), cat: "وطنية", isPublic: true });
+      });
+      return list.sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    // Direct Sync to Scriptable Widget
+    function syncToWidget() {
+      const payload = events
+        .filter(e => e.title && e.date && daysDiffFromToday(e.date) >= 0)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(e => ({ title: e.title, date: e.date }));
+
+      const scriptName = (settings.scriptName || "Hilali").trim();
+      const url = `scriptable:///run?scriptName=${encodeURIComponent(scriptName)}&events=${encodeURIComponent(JSON.stringify(payload))}`;
+      showToast("جاري تحديث الويدجت...");
+      window.location.href = url;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    // Navigation
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+      document.getElementById("tab-" + tab).classList.add("active");
+      document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add("active");
+      if (tab === "widget") renderWidgetPreview();
+      if (tab === "events") renderEventsTab();
+    }
+
+    function setCalMode(mode) {
+      calMode = mode;
+      document.getElementById("mode-hijri").classList.toggle("active", mode === "hijri");
+      document.getElementById("mode-greg").classList.toggle("active", mode === "greg");
+      renderCalendar();
+    }
+
+    function goToday() {
+      selectedDateYMD = todayYMD;
+      viewHijri = getHijriParts(today);
+      viewGreg = { year: today.getFullYear(), month: today.getMonth() + 1 };
+      renderCalendar();
+    }
+
+    function shiftMonth(delta) {
+      if (calMode === "hijri") {
+        let m = viewHijri.month + delta;
+        let y = viewHijri.year;
+        if (m > 12) { m = 1; y++; }
+        if (m < 1) { m = 12; y--; }
+        viewHijri = { year: y, month: m, day: 1 };
+      } else {
+        let m = viewGreg.month + delta;
+        let y = viewGreg.year;
+        if (m > 12) { m = 1; y++; }
+        if (m < 1) { m = 12; y--; }
+        viewGreg = { year: y, month: m };
+      }
+      renderCalendar();
+    }
+
+    function renderHeader() {
+      const h = getHijriParts(today);
+      document.getElementById("header-date").textContent =
+        `${h.day} ${HIJRI_MONTHS[h.month - 1]} • ${today.getDate()} ${GREG_MONTHS[today.getMonth()]}`;
+    }
+
+    function renderCalendar() {
+      const upcoming = events.filter(e => daysDiffFromToday(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+      const nearest = upcoming[0];
+      const badge = nearest ? formatDaysBadge(daysDiffFromToday(nearest.date)) : null;
+
+      document.getElementById("today-summary").innerHTML = `
+        <div style="font-size:12px; color:var(--accent); font-weight:700; margin-bottom:4px;">اليوم • ${WEEKDAYS[today.getDay()]}</div>
+        <div style="font-size:18px; font-weight:800;">${formatHijri(today)}</div>
+        <div style="font-size:13px; color:var(--sub); margin-top:2px;">الموافق ${formatGreg(today)}</div>
+        ${nearest ? `
+          <div style="margin-top:10px; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span style="font-size:12px;">أقرب موعد: <strong>${escapeHtml(nearest.title)}</strong></span>
+            <span class="badge ${badge.cls}">${badge.text}</span>
+          </div>
+        ` : ""}
+      `;
+
+      const eventDates = new Set(events.map(e => e.date));
+      const grid = document.getElementById("days-grid");
+      grid.innerHTML = "";
+
+      let cells = [];
+      if (calMode === "hijri") {
+        let d = hijriToGregDate(viewHijri.year, viewHijri.month, 1);
+        const startWeekday = d.getDay();
+        const days = [];
+        while (true) {
+          const hp = getHijriParts(d);
+          if (hp.month !== viewHijri.month || hp.year !== viewHijri.year) break;
+          days.push({ greg: new Date(d), hijri: hp });
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+          if (days.length > 31) break;
+        }
+        const firstG = days[0].greg;
+        const lastG = days[days.length - 1].greg;
+        document.getElementById("cal-title").textContent = `${HIJRI_MONTHS[viewHijri.month - 1]} ${viewHijri.year} هـ`;
+        document.getElementById("cal-subtitle").textContent =
+          firstG.getMonth() === lastG.getMonth()
+            ? `${GREG_MONTHS[firstG.getMonth()]} ${firstG.getFullYear()} م`
+            : `${GREG_MONTHS[firstG.getMonth()]} - ${GREG_MONTHS[lastG.getMonth()]} ${lastG.getFullYear()} م`;
+
+        for (let i = 0; i < startWeekday; i++) cells.push(null);
+        days.forEach(item => cells.push({
+          ymd: toYMD(item.greg),
+          main: item.hijri.day,
+          sub: item.greg.getDate() === 1 ? `1 ${GREG_MONTHS[item.greg.getMonth()].slice(0,3)}` : item.greg.getDate()
+        }));
+      } else {
+        const first = new Date(viewGreg.year, viewGreg.month - 1, 1);
+        const startWeekday = first.getDay();
+        const total = new Date(viewGreg.year, viewGreg.month, 0).getDate();
+        const hFirst = getHijriParts(first);
+        const hLast = getHijriParts(new Date(viewGreg.year, viewGreg.month - 1, total));
+        document.getElementById("cal-title").textContent = `${GREG_MONTHS[viewGreg.month - 1]} ${viewGreg.year} م`;
+        document.getElementById("cal-subtitle").textContent =
+          hFirst.month === hLast.month
+            ? `${HIJRI_MONTHS[hFirst.month - 1]} ${hFirst.year} هـ`
+            : `${HIJRI_MONTHS[hFirst.month - 1]} - ${HIJRI_MONTHS[hLast.month - 1]} ${hLast.year} هـ`;
+
+        for (let i = 0; i < startWeekday; i++) cells.push(null);
+        for (let day = 1; day <= total; day++) {
+          const gd = new Date(viewGreg.year, viewGreg.month - 1, day);
+          const hp = getHijriParts(gd);
+          cells.push({ ymd: toYMD(gd), main: day, sub: hp.day });
+        }
+      }
+
+      cells.forEach(c => {
+        const el = document.createElement("div");
+        if (!c) {
+          el.className = "day-cell empty";
+        } else {
+          el.className = "day-cell" + (c.ymd === todayYMD ? " today" : "") + (c.ymd === selectedDateYMD ? " selected" : "");
+          el.innerHTML = `<span class="main-d">${c.main}</span><span class="sub-d">${c.sub}</span>${eventDates.has(c.ymd) ? '<span class="dot"></span>' : ""}`;
+          el.onclick = () => { selectedDateYMD = c.ymd; renderCalendar(); };
+        }
+        grid.appendChild(el);
+      });
+
+      renderSelectedDay();
+    }
+
+    function renderSelectedDay() {
+      const d = parseYMD(selectedDateYMD);
+      document.getElementById("selected-day-label").textContent =
+        (selectedDateYMD === todayYMD ? "اليوم • " : "") + formatHijri(d);
+
+      const list = events.filter(e => e.date === selectedDateYMD);
+      const box = document.getElementById("selected-day-events");
+      if (list.length === 0) {
+        box.innerHTML = `<div style="font-size:13px; color:var(--sub); padding:6px 0;">لا توجد مواعيد في هذا اليوم (${formatGreg(d)})</div>`;
+        return;
+      }
+      box.innerHTML = list.map(ev => `
+        <div class="event-card" style="margin-bottom:8px;">
+          <div class="event-top">
+            <div>
+              <div class="event-title">${escapeHtml(ev.title)}</div>
+              <div class="event-meta">${ev.time ? "الساعة " + ev.time + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
+            </div>
+            <button class="pill-btn" onclick="openEventModal('${ev.id}')">تعديل</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function setEventFilter(f) {
+      eventFilter = f;
+      ["all", "mine", "public"].forEach(k => document.getElementById("filter-" + k).classList.toggle("active", k === f));
+      renderEventsTab();
+    }
+
+    function renderEventsTab() {
+      renderCountdown();
+      const pub = getPublicOccasions();
+      let list = [];
+      if (eventFilter === "mine") list = [...events];
+      else if (eventFilter === "public") list = [...pub];
+      else list = [...events, ...pub];
+
+      list.sort((a, b) => a.date.localeCompare(b.date));
+
+      const container = document.getElementById("events-list");
+      if (list.length === 0) {
+        container.innerHTML = `<div class="card" style="text-align:center; color:var(--sub); font-size:13px;">لا توجد مواعيد حالياً. اضغط «+ موعد جديد» للبدء.</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(ev => {
+        const d = parseYMD(ev.date);
+        const badge = formatDaysBadge(daysDiffFromToday(ev.date));
+        return `
+          <div class="event-card">
+            <div class="event-top">
+              <div>
+                <div class="event-title">${escapeHtml(ev.title)}</div>
+                <div class="event-meta">${formatHijri(d, true)}<br>${formatGreg(d)}${ev.time ? " • " + ev.time : ""}</div>
+                ${ev.note ? `<div class="event-note">${escapeHtml(ev.note)}</div>` : ""}
+              </div>
+              <div style="text-align:left;">
+                <span class="badge ${badge.cls}">${badge.text}</span>
+                <div style="font-size:11px; color:var(--sub); margin-top:4px;">${escapeHtml(ev.cat || "شخصي")}</div>
+              </div>
+            </div>
+            ${!ev.isPublic ? `
+              <div class="event-actions">
+                <button class="btn secondary sm" onclick="openEventModal('${ev.id}')">تعديل</button>
+                <button class="btn danger sm" onclick="deleteEvent('${ev.id}')">حذف</button>
+              </div>
+            ` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderCountdown() {
+      const box = document.getElementById("countdown-card");
+      const now = new Date();
+      const upcoming = events
+        .map(ev => {
+          const target = parseYMD(ev.date);
+          if (ev.time) {
+            const [hh, mm] = ev.time.split(":").map(Number);
+            target.setHours(hh || 0, mm || 0, 0, 0);
+          } else {
+            target.setHours(23, 59, 59, 0);
+          }
+          return { ...ev, target };
+        })
+        .filter(ev => ev.target > now)
+        .sort((a, b) => a.target - b.target);
+
+      if (upcoming.length === 0) {
+        box.innerHTML = `<div style="text-align:center; color:var(--sub); font-size:13px;">أضف موعداً ليبدأ العد التنازلي هنا</div>`;
+        return;
+      }
+
+      const next = upcoming[0];
+      const ms = Math.max(0, next.target - now);
+      const days = Math.floor(ms / 86400000);
+      const hrs = Math.floor((ms % 86400000) / 3600000);
+      const mins = Math.floor((ms % 3600000) / 60000);
+      const secs = Math.floor((ms % 60000) / 1000);
+
+      box.innerHTML = `
+        <div style="font-size:11px; color:var(--accent); font-weight:700;">العد التنازلي لأقرب موعد</div>
+        <div style="font-size:17px; font-weight:800; margin-top:4px;">${escapeHtml(next.title)}</div>
+        <div style="font-size:12px; color:var(--sub); margin-top:2px;">${formatHijri(parseYMD(next.date))} • ${formatGreg(parseYMD(next.date))}</div>
+        <div class="countdown-grid">
+          <div class="cd-box"><strong>${days}</strong><span>يوم</span></div>
+          <div class="cd-box"><strong>${String(hrs).padStart(2,"0")}</strong><span>ساعة</span></div>
+          <div class="cd-box"><strong>${String(mins).padStart(2,"0")}</strong><span>دقيقة</span></div>
+          <div class="cd-box"><strong>${String(secs).padStart(2,"0")}</strong><span>ثانية</span></div>
+        </div>
+      `;
+    }
+
+    // Event Modal
+    function openEventModal(id = null, presetYMD = null) {
+      const ev = id ? events.find(e => e.id === id) : null;
+      document.getElementById("modal-title").textContent = ev ? "تعديل الموعد" : "موعد جديد";
+      document.getElementById("ev-id").value = ev ? ev.id : "";
+      document.getElementById("ev-title").value = ev ? ev.title : "";
+      document.getElementById("ev-date").value = ev ? ev.date : (presetYMD || todayYMD);
+      document.getElementById("ev-time").value = ev ? (ev.time || "") : "";
+      document.getElementById("ev-cat").value = ev ? (ev.cat || "شخصي") : "شخصي";
+      document.getElementById("ev-note").value = ev ? (ev.note || "") : "";
+      document.getElementById("ev-autosync").checked = settings.autoSync;
+      updateModalHijriPreview();
+      document.getElementById("event-modal").classList.add("open");
+    }
+
+    function closeEventModal() {
+      document.getElementById("event-modal").classList.remove("open");
+    }
+
+    function updateModalHijriPreview() {
+      const val = document.getElementById("ev-date").value;
+      document.getElementById("ev-hijri-preview").textContent = val ? "يوافق هجرياً: " + formatHijri(parseYMD(val), true) : "";
+    }
+
+    function saveEvent() {
+      const id = document.getElementById("ev-id").value;
+      const title = document.getElementById("ev-title").value.trim();
+      const date = document.getElementById("ev-date").value;
+      const time = document.getElementById("ev-time").value;
+      const cat = document.getElementById("ev-cat").value;
+      const note = document.getElementById("ev-note").value.trim();
+      const shouldSync = document.getElementById("ev-autosync").checked;
+
+      if (!title || !date) {
+        showToast("اكتب عنوان الموعد والتاريخ");
+        return;
+      }
+
+      if (id) {
+        events = events.map(e => e.id === id ? { ...e, title, date, time, cat, note } : e);
+      } else {
+        events.push({ id: "ev_" + Date.now(), title, date, time, cat, note });
+      }
+
+      persistEvents();
+      closeEventModal();
+      renderCalendar();
+      renderEventsTab();
+      renderWidgetPreview();
+      showToast("تم حفظ الموعد");
+
+      if (shouldSync) {
+        setTimeout(() => syncToWidget(), 250);
+      }
+    }
+
+    function deleteEvent(id) {
+      events = events.filter(e => e.id !== id);
+      persistEvents();
+      renderCalendar();
+      renderEventsTab();
+      renderWidgetPreview();
+      showToast("تم حذف الموعد");
+      if (settings.autoSync) {
+        setTimeout(() => syncToWidget(), 250);
+      }
+    }
+
+    // Widget Tab
+    function renderWidgetPreview() {
+      document.getElementById("widget-script-name").value = settings.scriptName;
+      document.getElementById("scriptable-code-view").textContent = document.getElementById("scriptable-template").textContent;
+
+      const upcoming = events
+        .filter(e => daysDiffFromToday(e.date) >= 0)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 3);
+
+      const colors = ["#34D399", "#F59E0B", "#38BDF8"];
+      const rows = upcoming.length === 0
+        ? `<div style="text-align:center; color:var(--sub); font-size:12px; padding:14px 0;">لا توجد مواعيد قادمة</div>`
+        : upcoming.map((ev, i) => {
+            const b = formatDaysBadge(daysDiffFromToday(ev.date));
+            const c = colors[i % colors.length];
+            return `
+              <div class="wm-row">
+                <div style="display:flex; align-items:center; gap:7px;">
+                  <span style="color:${c}; font-size:9px;">●</span>
+                  <strong style="font-size:13px;">${escapeHtml(ev.title)}</strong>
+                </div>
+                <span class="badge" style="background:${c}28; color:${c};">${b.text}</span>
+              </div>
+            `;
+          }).join("");
+
+      document.getElementById("widget-preview").innerHTML = `
+        <div class="wm-head">
+          <strong style="color:#34D399; font-size:13px;">${formatHijri(today, true)}</strong>
+          <span style="color:#94A3B8; font-size:12px;">${today.getDate()} ${GREG_MONTHS[today.getMonth()]}</span>
+        </div>
+        ${rows}
+      `;
+    }
+
+    function saveScriptName(val) {
+      settings.scriptName = (val || "Hilali").trim();
+      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
+      showToast("تم حفظ اسم السكربت");
+    }
+
+    function copyScriptableCode() {
+      const code = document.getElementById("scriptable-template").textContent;
+      navigator.clipboard.writeText(code).then(() => showToast("تم نسخ كود Scriptable"));
+    }
+
+    // Converter Tab
+    function initConverter() {
+      const sel = document.getElementById("ch-month");
+      sel.innerHTML = HIJRI_MONTHS.map((m, i) => `<option value="${i + 1}">${i + 1} - ${m}</option>`).join("");
+      quickConvert(0);
+    }
+
+    function setConvDir(dir) {
+      convDir = dir;
+      document.getElementById("conv-h2g").classList.toggle("active", dir === "h2g");
+      document.getElementById("conv-g2h").classList.toggle("active", dir === "g2h");
+      document.getElementById("conv-h2g-inputs").style.display = dir === "h2g" ? "block" : "none";
+      document.getElementById("conv-g2h-inputs").style.display = dir === "g2h" ? "block" : "none";
+      runConvert();
+    }
+
+    function quickConvert(addDays) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + addDays);
+      const hp = getHijriParts(d);
+      document.getElementById("ch-day").value = hp.day;
+      document.getElementById("ch-month").value = hp.month;
+      document.getElementById("ch-year").value = hp.year;
+      document.getElementById("cg-date").value = toYMD(d);
+      runConvert();
+    }
+
+    function runConvert() {
+      let d;
+      if (convDir === "h2g") {
+        const day = parseInt(document.getElementById("ch-day").value, 10) || 1;
+        const month = parseInt(document.getElementById("ch-month").value, 10) || 1;
+        const year = parseInt(document.getElementById("ch-year").value, 10) || 1448;
+        d = hijriToGregDate(year, month, day);
+      } else {
+        const val = document.getElementById("cg-date").value;
+        d = val ? parseYMD(val) : today;
+      }
+
+      lastConvertedYMD = toYMD(d);
+      const diff = daysDiffFromToday(lastConvertedYMD);
+      const note = diff === 0 ? "يوافق اليوم الحالي" : diff > 0 ? `بعد ${diff} يوم من اليوم` : `قبل ${Math.abs(diff)} يوم`;
+
+      document.getElementById("conv-result").innerHTML = `
+        <div style="font-size:12px; color:var(--accent); font-weight:700;">${WEEKDAYS[d.getDay()]}</div>
+        <div style="font-size:20px; font-weight:800; margin:6px 0;">${convDir === "h2g" ? formatGreg(d) : formatHijri(d)}</div>
+        <div style="font-size:13px; color:var(--sub);">الموافق ${convDir === "h2g" ? formatHijri(d) : formatGreg(d)}</div>
+        <div style="font-size:12px; color:var(--amber); margin:8px 0 12px;">${note}</div>
+        <button class="btn primary full" onclick="openEventModal(null, lastConvertedYMD)">+ إضافة كموعد</button>
+      `;
+    }
+
+    // Settings
+    function openSettings() {
+      document.getElementById("set-offset").value = String(settings.hijriOffset);
+      document.getElementById("set-script").value = settings.scriptName;
+      document.getElementById("set-autosync").checked = settings.autoSync;
+      document.getElementById("settings-modal").classList.add("open");
+    }
+
+    function closeSettings() {
+      document.getElementById("settings-modal").classList.remove("open");
+    }
+
+    function saveSettings() {
+      settings.hijriOffset = parseInt(document.getElementById("set-offset").value, 10) || 0;
+      settings.scriptName = (document.getElementById("set-script").value || "Hilali").trim();
+      settings.autoSync = document.getElementById("set-autosync").checked;
+      localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
+      renderHeader();
+      renderCalendar();
+      renderEventsTab();
+      renderWidgetPreview();
+    }
+
+    // Init
+    renderHeader();
+    renderCalendar();
+    renderEventsTab();
+    renderWidgetPreview();
+    initConverter();
+    setInterval(() => {
+      if (document.getElementById("tab-events").classList.contains("active")) renderCountdown();
+    }, 1000);
+  </script>
+</body>
+</html>
