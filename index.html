@@ -1041,13 +1041,16 @@ widget.backgroundGradient = grad;
 const now = new Date();
 const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-const hijriFull = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
-  weekday: "long", day: "numeric", month: "long", year: "numeric"
-}).format(new Date(now.getFullYear(), now.getMonth(), now.getDate() + (settings.offset || 0)));
-
-const gregShort = new Intl.DateTimeFormat("ar-SA", {
-  day: "numeric", month: "short"
-}).format(now);
+// التاريخ بالأرقام: الجمعة 10/06/1448هـ  و  20/11/2026م
+const p2 = n => String(n).padStart(2, "0");
+const hDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (settings.offset || 0));
+const hp = {};
+new Intl.DateTimeFormat("en-US-u-ca-islamic-umalqura", { day: "numeric", month: "numeric", year: "numeric" })
+  .formatToParts(hDate).forEach(x => { if (x.type !== "literal") hp[x.type] = parseInt(x.value, 10); });
+const weekday = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(now);
+const LRI = "\u2066", PDI = "\u2069"; // يمنع الاتجاه العربي من قلب الأرقام
+const hijriFull = `${weekday} ${LRI}${p2(hp.day)}/${p2(hp.month)}/${hp.year}${PDI}هـ`;
+const gregShort = `${LRI}${p2(now.getDate())}/${p2(now.getMonth() + 1)}/${now.getFullYear()}${PDI}م`;
 
 const header = widget.addStack();
 header.layoutHorizontally();
@@ -1077,18 +1080,27 @@ function getDaysInfo(dateStr) {
   return { diff, text };
 }
 
-const allItems = events.slice();
+const SALARY_TITLE = "💰 يوم الرواتب";
+const maxRows = config.widgetFamily === "large" ? 6 : 3;
+
+// باقي المواعيد (بدون الراتب، عشان ما يتكرر لو وصل من الصفحة)
+const others = events
+  .filter(ev => ev.title !== SALARY_TITLE)
+  .map(ev => ({ ...ev, info: getDaysInfo(ev.date) }))
+  .filter(ev => ev.info !== null)
+  .sort((a, b) => a.info.diff - b.info.diff);
+
+// الراتب له مكان محجوز دايماً في الويدجت
+let salary = null;
 if (settings.salary !== false) {
   let pay = new Date(now.getFullYear(), now.getMonth(), 27);
   if (pay < startOfToday) pay = new Date(now.getFullYear(), now.getMonth() + 1, 27);
-  allItems.push({ title: "💰 يوم الرواتب", date: localYMD(pay) });
+  const date = localYMD(pay);
+  salary = { title: SALARY_TITLE, date, info: getDaysInfo(date) };
 }
 
-const upcoming = allItems
-  .map(ev => ({ ...ev, info: getDaysInfo(ev.date) }))
-  .filter(ev => ev.info !== null)
-  .sort((a, b) => a.info.diff - b.info.diff)
-  .slice(0, config.widgetFamily === "large" ? 6 : 3);
+const upcoming = (salary ? others.slice(0, maxRows - 1).concat(salary) : others.slice(0, maxRows))
+  .sort((a, b) => a.info.diff - b.info.diff);
 
 if (upcoming.length === 0) {
   widget.addSpacer();
@@ -1386,6 +1398,7 @@ Script.complete();</script>
         .sort((a, b) => a.date.localeCompare(b.date))
         .map(e => ({ title: e.title, date: e.date }));
       getUpcomingSchoolItems().forEach(x => payload.push({ title: x.title, date: x.date }));
+      getUpcomingSalaries(1).forEach(x => payload.push({ title: x.title, date: x.date }));
       payload.sort((a, b) => a.date.localeCompare(b.date));
 
       const scriptName = (settings.scriptName || "Hilali").trim();
@@ -1755,10 +1768,13 @@ Script.complete();</script>
       document.getElementById("widget-script-name").value = settings.scriptName;
       document.getElementById("scriptable-code-view").textContent = document.getElementById("scriptable-template").textContent;
 
-      const upcoming = getItemsWithAuto()
+      // نفس قاعدة الويدجت: الراتب له مكان محجوز
+      const others = [...events, ...getUpcomingSchoolItems()]
         .filter(e => daysDiffFromToday(e.date) >= 0)
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .slice(0, 3);
+        .sort((a, b) => a.date.localeCompare(b.date));
+      const sal = getUpcomingSalaries(1);
+      const upcoming = (sal.length ? others.slice(0, 2).concat(sal) : others.slice(0, 3))
+        .sort((a, b) => a.date.localeCompare(b.date));
 
       const colors = ["#34D399", "#F59E0B", "#38BDF8"];
       const rows = upcoming.length === 0
@@ -1779,8 +1795,8 @@ Script.complete();</script>
 
       document.getElementById("widget-preview").innerHTML = `
         <div class="wm-head">
-          <strong style="color:#34D399; font-size:13px;">${formatHijri(today, true)}</strong>
-          <span style="color:#94A3B8; font-size:12px;">${today.getDate()} ${GREG_MONTHS[today.getMonth()]}</span>
+          <strong style="color:#34D399; font-size:13px;">${WEEKDAYS[today.getDay()]} ${numHijri(today)}</strong>
+          <span style="color:#94A3B8; font-size:12px;">${numGreg(today)}</span>
         </div>
         ${rows}
       `;
