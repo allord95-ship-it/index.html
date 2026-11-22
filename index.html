@@ -785,7 +785,10 @@
       </div>
 
       <div class="card">
-        <div class="section-title"><span>كود Scriptable (احتياطي)</span></div>
+        <div class="section-title"><span>كود Scriptable</span><span class="badge green">النسخة 5</span></div>
+        <p style="margin:0 0 10px; font-size:12px; color:var(--sub); line-height:1.6;">
+          إذا الويدجت يكتب الشهر بالحروف أو ما يطلع فيه الراتب، معناه الكود في Scriptable قديم: انسخ هذا الكود والصقه مكان القديم.
+        </p>
         <div class="code-preview" id="scriptable-code-view"></div>
         <button class="btn secondary full" onclick="copyScriptableCode()">📋 نسخ كود Scriptable</button>
       </div>
@@ -946,7 +949,9 @@
   </div>
 
   <!-- Scriptable Template -->
-  <script type="text/plain" id="scriptable-template">const fm = FileManager.local();
+  <script type="text/plain" id="scriptable-template">// هلالي — نسخة الكود (لازم تطابق الصفحة)
+const SCRIPT_VERSION = 5;
+const fm = FileManager.local();
 const filePath = fm.joinPath(fm.documentsDirectory(), "hilali_events.json");
 
 function loadEvents() {
@@ -988,7 +993,8 @@ if (qp.events) {
   } catch (e) {}
 }
 
-if (qp.offset !== undefined || qp.salary !== undefined) {
+if (qp.offset !== undefined || qp.salary !== undefined || qp.v !== undefined) {
+  if (qp.v !== undefined) settings.latest = parseInt(qp.v, 10) || 0;
   if (qp.offset !== undefined) settings.offset = parseInt(qp.offset, 10) || 0;
   if (qp.salary !== undefined) settings.salary = qp.salary === "1";
   fm.writeString(settingsPath, JSON.stringify(settings));
@@ -1057,14 +1063,29 @@ header.layoutHorizontally();
 header.centerAlignContent();
 
 const gText = header.addText(gregShort);
-gText.font = Font.mediumSystemFont(12);
+gText.font = Font.semiboldSystemFont(13);
 gText.textColor = new Color("#94A3B8");
+gText.lineLimit = 1;
+gText.minimumScaleFactor = 0.7;
+header.addSpacer(6);
 header.addSpacer();
 
 const hText = header.addText(hijriFull);
 hText.font = Font.boldSystemFont(14);
 hText.textColor = new Color("#34D399");
+hText.lineLimit = 1;
+hText.minimumScaleFactor = 0.7;
 hText.rightAlignText();
+
+// تنبيه إذا الصفحة أحدث من هذا الكود
+if ((settings.latest || 0) > SCRIPT_VERSION) {
+  widget.addSpacer(4);
+  const warn = widget.addText("⚠️ حدّث كود السكربت من تبويب الويدجت");
+  warn.font = Font.semiboldSystemFont(11);
+  warn.textColor = new Color("#F59E0B");
+  warn.lineLimit = 1;
+  warn.minimumScaleFactor = 0.7;
+}
 
 widget.addSpacer(8);
 const divider = widget.addStack();
@@ -1391,6 +1412,9 @@ Script.complete();</script>
       return list.sort((a, b) => a.date.localeCompare(b.date));
     }
 
+    // نسخة كود Scriptable الحالية: ارفعها كل ما يتغير الكود، والويدجت ينبّه لو كوده أقدم
+    const WIDGET_SCRIPT_VERSION = 5;
+
     // Direct Sync to Scriptable Widget
     function syncToWidget() {
       const payload = events
@@ -1404,7 +1428,7 @@ Script.complete();</script>
       const scriptName = (settings.scriptName || "Hilali").trim();
       const url = `scriptable:///run?scriptName=${encodeURIComponent(scriptName)}` +
         `&events=${encodeURIComponent(JSON.stringify(payload))}` +
-        `&offset=${settings.hijriOffset}&salary=${settings.showSalary ? 1 : 0}`;
+        `&offset=${settings.hijriOffset}&salary=${settings.showSalary ? 1 : 0}&v=${WIDGET_SCRIPT_VERSION}`;
       showToast("جاري تحديث الويدجت...");
       window.location.href = url;
     }
