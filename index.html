@@ -1173,6 +1173,15 @@ if (fm.fileExists(corePath)) {
       return `<bdi dir="ltr">${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}</bdi> م`;
     }
 
+    // الوقت بنظام 12 ساعة: 21:00 ← 9:00 م ، 00:30 ← 12:30 ص
+    function formatTime12(t) {
+      const [hh, mm] = String(t).split(":").map(Number);
+      if (isNaN(hh)) return escapeHtml(t);
+      const period = hh >= 12 ? "م" : "ص";
+      const h12 = hh % 12 === 0 ? 12 : hh % 12;
+      return `<bdi dir="ltr">${h12}:${pad2(mm || 0)}</bdi> ${period}`;
+    }
+
     function formatGreg(d) {
       return `${d.getDate()} ${GREG_MONTHS[d.getMonth()]} ${d.getFullYear()} م`;
     }
@@ -1420,7 +1429,7 @@ if (fm.fileExists(corePath)) {
                 <span>${escapeHtml(ev.title)}</span>
                 ${b ? `<span class="badge ${b.cls}">${b.text}</span>` : ""}
               </div>
-              <div class="event-meta">${ev.time ? "الساعة " + ev.time + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
+              <div class="event-meta">${ev.time ? "الساعة " + formatTime12(ev.time) + " • " : ""}${escapeHtml(ev.cat || "شخصي")}</div>
               ${ev.isPublic && ev.note ? `<div class="event-note">${escapeHtml(ev.note)}</div>` : ""}
             </div>
             ${ev.isPublic ? "" : `<div class="ev-actions">
@@ -1463,7 +1472,7 @@ if (fm.fileExists(corePath)) {
             <div class="event-top">
               <div>
                 <div class="event-title">${escapeHtml(ev.title)}</div>
-                <div class="event-meta">${formatHijri(d, true)}<br>${formatGreg(d)}${ev.time ? " • " + ev.time : ""}</div>
+                <div class="event-meta">${formatHijri(d, true)}<br>${formatGreg(d)}${ev.time ? " • " + formatTime12(ev.time) : ""}</div>
                 ${ev.note ? `<div class="event-note">${escapeHtml(ev.note)}</div>` : ""}
               </div>
               <div style="text-align:left;">
