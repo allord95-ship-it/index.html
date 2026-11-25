@@ -1193,7 +1193,14 @@ if (fm.fileExists(corePath)) {
     }
 
     function formatDaysBadge(diff) {
-      if (diff < 0) return { text: "انتهى", cls: "gray" };
+      if (diff < 0) {
+        // موعد فات: كم يوم مضى عليه
+        const ago = -diff;
+        if (ago === 1) return { text: "أمس", cls: "gray" };
+        if (ago === 2) return { text: "قبل يومين", cls: "gray" };
+        if (ago <= 10) return { text: `قبل ${ago} أيام`, cls: "gray" };
+        return { text: `قبل ${ago} يوم`, cls: "gray" };
+      }
       if (diff === 0) return { text: "اليوم", cls: "green" };
       if (diff === 1) return { text: "غداً", cls: "green" };
       if (diff === 2) return { text: "بعد يومين", cls: "green" };
